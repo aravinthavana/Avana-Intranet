@@ -1,0 +1,282 @@
+[
+  {
+    "department": "Manager - Service & IT",
+    "extension": "130",
+    "floor": "Ground Floor",
+    "id": 130,
+    "name": "Singaravel"
+  },
+  {
+    "department": "Service Coordinator",
+    "extension": "129",
+    "floor": "Ground Floor",
+    "id": 129,
+    "name": "Malini"
+  },
+  {
+    "department": "Service Engineer",
+    "extension": "131",
+    "floor": "Ground Floor",
+    "id": 131,
+    "name": "Dinesh"
+  },
+  {
+    "department": "Service Desk Place",
+    "extension": "132",
+    "floor": "Ground Floor",
+    "id": 132,
+    "name": "Service"
+  },
+  {
+    "department": "Managing Director",
+    "extension": "101",
+    "floor": "1st Floor",
+    "id": 101,
+    "name": "Sundararajan"
+  },
+  {
+    "department": "Assistant General Manager - South",
+    "extension": "102",
+    "floor": "1st Floor",
+    "id": 102,
+    "name": "Swaminathan Arun"
+  },
+  {
+    "department": "National Sales Manager",
+    "extension": "103",
+    "floor": "1st Floor",
+    "id": 103,
+    "name": "Praveen Raghavendra "
+  },
+  {
+    "department": "HR",
+    "extension": "104",
+    "floor": "1st Floor",
+    "id": 104,
+    "name": "Sujithra"
+  },
+  {
+    "department": "HR(L&D)",
+    "extension": "105",
+    "floor": "1st Floor",
+    "id": 105,
+    "name": "Lokshni"
+  },
+  {
+    "department": "MIS Executive",
+    "extension": "106",
+    "floor": "1st Floor",
+    "id": 106,
+    "name": "Vignesh"
+  },
+  {
+    "department": "Travel Desk",
+    "extension": "107",
+    "floor": "1st Floor",
+    "id": 107,
+    "name": "Rajan"
+  },
+  {
+    "department": "Sales",
+    "extension": "108",
+    "floor": "1st Floor",
+    "id": 108,
+    "name": "Sales Team"
+  },
+  {
+    "department": "Strategic Growth Manager",
+    "extension": "109",
+    "floor": "1st Floor",
+    "id": 109,
+    "name": "Richard"
+  },
+  {
+    "department": "Manager - Finance",
+    "extension": "110",
+    "floor": "1st Floor",
+    "id": 110,
+    "name": "Sureshgobi"
+  },
+  {
+    "department": "Sr. Executive - Account",
+    "extension": "111",
+    "floor": "1st Floor",
+    "id": 111,
+    "name": "Sivasankar"
+  },
+  {
+    "department": "Executive - Accounts",
+    "extension": "112",
+    "floor": "2nd Floor",
+    "id": 112,
+    "name": "Manikandan B"
+  },
+  {
+    "department": "Admin",
+    "extension": "113",
+    "floor": "2nd Floor",
+    "id": 113,
+    "name": "Karthik"
+  },
+  {
+    "department": "Manager - Finance & Admin",
+    "extension": "126",
+    "floor": "2nd Floor",
+    "id": 126,
+    "name": "Srinivasan - "
+  },
+  {
+    "department": "Empty",
+    "extension": "117",
+    "floor": "2nd Floor",
+    "id": 117,
+    "name": "Empty"
+  },
+  {
+    "department": "National Sales Manager",
+    "extension": "118",
+    "floor": "2nd Floor",
+    "id": 118,
+    "name": "Azgar Hussain"
+  },
+  {
+    "department": "Sales Department",
+    "extension": "119",
+    "floor": "2nd Floor",
+    "id": 119,
+    "name": "Sales Manager"
+  },
+  {
+    "department": "MedEd Manager",
+    "extension": "120",
+    "floor": "2nd Floor",
+    "id": 120,
+    "name": "Ramesh"
+  },
+  {
+    "department": "Sales Trainee",
+    "extension": "121",
+    "floor": "2nd Floor",
+    "id": 121,
+    "name": "Gokulakannan"
+  },
+  {
+    "department": "Director",
+    "extension": "122",
+    "floor": "2nd Floor",
+    "id": 122,
+    "name": "Vivek"
+  },
+  {
+    "department": "Cordless Phone",
+    "extension": "123",
+    "floor": "2nd Floor",
+    "id": 123,
+    "name": "Conference Hall"
+  },
+  {
+    "department": "Manager \u2013 Commercial",
+    "extension": "124",
+    "floor": "2nd Floor",
+    "id": 124,
+    "name": "Bubeshkumar"
+  },
+  {
+    "department": "Jr. Executive - Regulatory & Compliance",
+    "extension": "125",
+    "floor": "2nd Floor",
+    "id": 125,
+    "name": "Pavithran"
+  },
+  {
+    "department": "Manager - HR",
+    "extension": "128",
+    "floor": "3rd Floor",
+    "id": 128,
+    "name": "Suganthan"
+  },
+  {
+    "department": "IT",
+    "extension": "129",
+    "floor": "Ground Floor",
+    "id": 1767862290887,
+    "name": "Aravinth"
+  },
+  {
+    "department": "Service Engineer",
+    "extension": "131",
+    "floor": "Ground Floor",
+    "id": 1767862398611,
+    "name": "Ranjith"
+  },
+  {
+    "department": "Sr. Network & Service Engineer",
+    "extension": "131",
+    "floor": "Ground Floor",
+    "id": 1767862422184,
+    "name": "Kumaresan"
+  },
+  {
+    "department": "Finance",
+    "extension": "113",
+    "floor": "2nd Floor",
+    "id": 1767863412543,
+    "name": "Kalee"
+  },
+  {
+    "department": "Finance",
+    "extension": "113",
+    "floor": "2nd Floor",
+    "id": 1767863421560,
+    "name": "Saran"
+  },
+  {
+    "department": "Executive - Commercial",
+    "extension": "125",
+    "floor": "2nd Floor",
+    "id": 1767863523228,
+    "name": "Ananad"
+  },
+  {
+    "department": "Executive - Commercial",
+    "extension": "125",
+    "floor": "2nd Floor",
+    "id": 1767863542187,
+    "name": "Silambarasan"
+  },
+  {
+    "department": "Jr. Executive - Accounts",
+    "extension": "112",
+    "floor": "2nd Floor",
+    "id": 1767863822014,
+    "name": "Roshini"
+  },
+  {
+    "department": "Executive - Accounts",
+    "extension": "112",
+    "floor": "2nd Floor",
+    "id": 1767863832670,
+    "name": "Anitha"
+  },
+  {
+    "department": "Sales Coordinator",
+    "extension": "106",
+    "floor": "1st Floor",
+    "id": 1767865259122,
+    "name": "Ajith"
+  },
+  {
+    "department": "Sr. Executive - Ecommerce",
+    "extension": "121",
+    "floor": "2nd Floor",
+    "id": 1767876458090,
+    "name": "Kishore Kumar"
+  },
+  {
+    "department": "Graphic Designer",
+    "extension": "121",
+    "floor": "2nd Floor",
+    "id": 1767876508706,
+    "name": "Navaneetha Krishnan"
+  }
+]

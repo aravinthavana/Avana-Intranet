@@ -1,0 +1,10 @@
+[
+    {
+        "id": 1,
+        "hall": "Conference Room A",
+        "booked_by": "John Doe",
+        "date": "2024-10-28",
+        "start_time": "14:00",
+        "end_time": "15:00"
+    }
+]
