@@ -2,8 +2,16 @@
   <div class="card" style="max-width: 400px; width: 100%;">
     <h2>Admin Login</h2>
     <form @submit.prevent="handleLogin">
-       <input v-model="password" type="password" placeholder="Password" />
-       <button type="submit">Login</button>
+       <input 
+         v-model="password" 
+         type="password" 
+         placeholder="Password" 
+         :disabled="store.loading"
+         required
+       />
+       <button type="submit" :disabled="store.loading">
+         {{ store.loading ? 'Logging in...' : 'Login' }}
+       </button>
        <p v-if="error" style="color:red; margin-top:10px;">{{ error }}</p>
     </form>
   </div>
@@ -12,30 +20,22 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useDataStore } from '../stores/data'
 
 const password = ref('')
 const error = ref('')
 const router = useRouter()
+const store = useDataStore()
 
 async function handleLogin() {
-  // Simple check against backend
+  error.value = ''
+  
   try {
-      const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ password: password.value })
-      })
-      const data = await res.json()
-      if (data.success) {
-          localStorage.setItem('admin_token', data.token)
-          router.push('/admin/dashboard')
-      } else {
-          error.value = 'Invalid password'
-      }
+    await store.login(password.value)
+    // Login successful, navigate to dashboard
+    router.push('/admin/dashboard')
   } catch (e) {
-      // Allow bypass if offline for testing? No, stick to logic.
-      // If server is down, this will fail.
-      error.value = 'Login failed (Server error)'
+    error.value = e.message || 'Login failed. Please check your password.'
   }
 }
 </script>
