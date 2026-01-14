@@ -1,15 +1,67 @@
 <template>
-  <div class="admin-wrapper" style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 2rem;">
-    <header class="admin-header">
-        <h1>Admin Dashboard</h1>
-        <button class="btn-outline" @click="$router.push('/')">Exit & View Site</button>
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-neutral-900">Admin Dashboard</h1>
+        <p class="text-neutral-600 mt-1">Manage your intranet content</p>
+      </div>
+      <Button variant="outline" @click="$router.push('/')">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Exit & View Site
+      </Button>
     </header>
     
-    <div class="tabs">
-      <button :class="{active: tab==='announcements'}" @click="tab='announcements'">Announcements</button>
-      <button :class="{active: tab==='intercom'}" @click="tab='intercom'">Intercom</button>
-      <button :class="{active: tab==='events'}" @click="tab='events'">Events</button>
-       <button :class="{active: tab==='bookings'}" @click="tab='bookings'">Bookings</button>
+    <!-- Tabs -->
+    <div class="border-b border-neutral-200 mb-6">
+      <nav class="-mb-px flex space-x-8">
+        <button 
+          @click="tab='announcements'"
+          :class="[
+            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+            tab === 'announcements' 
+              ? 'border-primary-600 text-primary-600' 
+              : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300'
+          ]"
+        >
+          Announcements
+        </button>
+        <button 
+          @click="tab='intercom'"
+          :class="[
+            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+            tab === 'intercom' 
+              ? 'border-primary-600 text-primary-600' 
+              : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300'
+          ]"
+        >
+          Intercom
+        </button>
+        <button 
+          @click="tab='events'"
+          :class="[
+            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+            tab === 'events' 
+              ? 'border-primary-600 text-primary-600' 
+              : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300'
+          ]"
+        >
+          Events
+        </button>
+        <button 
+          @click="tab='bookings'"
+          :class="[
+            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+            tab === 'bookings' 
+              ? 'border-primary-600 text-primary-600' 
+              : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300'
+          ]"
+        >
+          Bookings
+        </button>
+      </nav>
     </div>
 
     <div class="content">
@@ -216,7 +268,10 @@ onMounted(() => {
 
 // --- Feature: Announcements ---
 async function addAnnouncement() {
-  if(!newAnnouncement.value.title || !newAnnouncement.value.date) return alert('Title and Date required')
+  if(!newAnnouncement.value.title || !newAnnouncement.value.date) {
+    toast.warning('Title and Date are required')
+    return
+  }
   
   const updated = [...store.announcements, { ...newAnnouncement.value, id: Date.now() }]
   const success = await store.saveData('announcements', updated)
@@ -227,14 +282,19 @@ async function addAnnouncement() {
      }
      newAnnouncement.value = { title: '', description: '', date: new Date().toISOString().split('T')[0], important: false }
      sendEmail.value = false
-     showFeedback('Announcement Published!')
+     toast.success('Announcement published successfully!')
+  } else {
+     toast.error('Failed to publish announcement')
   }
 }
 async function deleteAnnouncement(idx) {
   if(!confirm('Delete this announcement?')) return
   const updated = [...store.announcements]
   updated.splice(idx, 1)
-  await store.saveData('announcements', updated)
+  const success = await store.saveData('announcements', updated)
+  if (success) {
+    toast.success('Announcement deleted')
+  }
 }
 
 // --- Feature: Intercom ---
