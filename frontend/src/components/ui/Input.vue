@@ -8,7 +8,7 @@
     <div class="relative">
       <input
         :id="id"
-        :type="type"
+        :type="computedType"
         :value="modelValue"
         :placeholder="placeholder"
         :disabled="disabled"
@@ -19,7 +19,7 @@
         @focus="$emit('focus')"
       />
       
-      <div v-if="$slots.suffix" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+      <div v-if="$slots.suffix" class="absolute inset-y-0 right-0 pr-3 flex items-center">
         <slot name="suffix"></slot>
       </div>
     </div>
@@ -53,10 +53,18 @@ const props = defineProps({
   helper: String,
   disabled: Boolean,
   required: Boolean,
-  containerClass: String
+  containerClass: String,
+  showPassword: Boolean
 })
 
 defineEmits(['update:modelValue', 'blur', 'focus'])
+
+const computedType = computed(() => {
+  if (props.type === 'password' && props.showPassword) {
+    return 'text'
+  }
+  return props.type
+})
 
 const inputClasses = computed(() => {
   const base = 'block w-full px-3 py-2 border rounded-lg shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors sm:text-sm'
@@ -69,6 +77,8 @@ const inputClasses = computed(() => {
     ? 'bg-neutral-50 text-neutral-500 cursor-not-allowed'
     : 'bg-white'
   
-  return [base, state, disabled].join(' ')
+  const suffix = props.$slots?.suffix ? 'pr-10' : ''
+  
+  return [base, state, disabled, suffix].join(' ')
 })
 </script>

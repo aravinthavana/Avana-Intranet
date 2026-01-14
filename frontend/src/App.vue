@@ -1,55 +1,115 @@
 <template>
-  <div v-if="$route.path.startsWith('/admin') && $route.path !== '/'" class="admin-layout">
+  <!-- Admin Layout (Login and Dashboard) -->
+  <div v-if="$route.path.startsWith('/admin') && $route.path !== '/'" class="min-h-screen flex items-center justify-center bg-neutral-50 py-12 px-4 sm:px-6 lg:px-8">
     <router-view></router-view>
   </div>
-  <div v-else id="app-layout">
+  
+  <!-- Main App Layout (User Views) -->
+  <div v-else class="flex w-full h-screen bg-neutral-50">
     
     <!-- Sidebar -->
-    <nav class="sidebar" :class="{ open: isSidebarOpen }">
-      <div class="brand">
-        <img src="./assets/Avana-logo-black.png" alt="Avana Logo" class="logo" />
-        <div class="brand-text">
-          <span class="company">Avana Group</span>
-          <span class="tagline">Intranet Portal</span>
+    <nav 
+      class="w-64 bg-white border-r border-neutral-200 flex flex-col p-6 flex-shrink-0 h-screen transition-transform duration-300 ease-in-out fixed md:relative z-50"
+      :class="{ '-translate-x-full md:translate-x-0': !isSidebarOpen, 'translate-x-0': isSidebarOpen }"
+    >
+      <!-- Brand -->
+      <div class="flex items-center gap-3 mb-8 pb-4 border-b border-neutral-100">
+        <img src="./assets/Avana-logo-black.png" alt="Avana Logo" class="w-8 h-auto object-contain" />
+        <div class="flex flex-col leading-tight">
+          <span class="font-bold text-base text-neutral-800">Avana Group</span>
+          <span class="text-xs text-neutral-500 uppercase tracking-wide">Intranet Portal</span>
         </div>
       </div>
       
-      <div class="nav-links">
-        <router-link to="/" @click="isSidebarOpen = false">
-          <span class="icon">📊</span> Dashboard
+      <!-- Navigation Links -->
+      <div class="flex flex-col gap-2 flex-1">
+        <router-link 
+          to="/" 
+          @click="isSidebarOpen = false"
+          class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200"
+          active-class="!bg-primary-700 !text-white shadow-md"
+        >
+          <span class="text-lg w-6 text-center">📊</span>
+          <span>Dashboard</span>
         </router-link>
-        <router-link to="/intercom" @click="isSidebarOpen = false">
-          <span class="icon">👥</span> Intercom Directory
+        
+        <router-link 
+          to="/intercom" 
+          @click="isSidebarOpen = false"
+          class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200"
+          active-class="!bg-primary-700 !text-white shadow-md"
+        >
+          <span class="text-lg w-6 text-center">👥</span>
+          <span>Intercom Directory</span>
         </router-link>
-        <router-link to="/events" @click="isSidebarOpen = false">
-          <span class="icon">🎉</span> Events
+        
+        <router-link 
+          to="/events" 
+          @click="isSidebarOpen = false"
+          class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200"
+          active-class="!bg-primary-700 !text-white shadow-md"
+        >
+          <span class="text-lg w-6 text-center">🎉</span>
+          <span>Events</span>
         </router-link>
-        <router-link to="/bookings" @click="isSidebarOpen = false">
-          <span class="icon">📅</span> Bookings
+        
+        <router-link 
+          to="/bookings" 
+          @click="isSidebarOpen = false"
+          class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200"
+          active-class="!bg-primary-700 !text-white shadow-md"
+        >
+          <span class="text-lg w-6 text-center">📅</span>
+          <span>Bookings</span>
         </router-link>
       </div>
 
-      <div class="nav-footer">
-        <router-link to="/admin" @click="isSidebarOpen = false" class="admin-link">
-          <span class="icon">⚙️</span> Admin
+      <!-- Admin Link -->
+      <div class="mt-auto pt-4 border-t border-neutral-100">
+        <router-link 
+          to="/admin" 
+          @click="isSidebarOpen = false"
+          class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200 admin-link"
+          active-class="!bg-primary-700 !text-white shadow-md"
+        >
+          <span class="text-lg w-6 text-center">⚙️</span>
+          <span>Admin</span>
         </router-link>
       </div>
     </nav>
     
     <!-- Mobile Overlay -->
-    <div class="sidebar-overlay" v-if="isSidebarOpen" @click="isSidebarOpen = false"></div>
+    <div 
+      v-if="isSidebarOpen" 
+      @click="isSidebarOpen = false"
+      class="fixed inset-0 bg-neutral-900/50 z-40 md:hidden"
+    ></div>
 
     <!-- Main Content Area -->
-    <div class="content-wrapper">
-      <header class="top-bar">
-        <button class="mobile-toggle" @click="isSidebarOpen = !isSidebarOpen">☰</button>
-        <h2 class="page-title">{{ currentRouteName }}</h2>
-        <div class="user-profile">
-          <div class="avatar">👤</div>
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+      <!-- Top Bar -->
+      <header class="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-4 md:px-8 flex-shrink-0">
+        <div class="flex items-center gap-4">
+          <button 
+            @click="isSidebarOpen = !isSidebarOpen"
+            class="md:hidden text-neutral-700 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-lg p-2 -ml-2"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+          <h2 class="text-xl font-semibold text-neutral-800">{{ currentRouteName }}</h2>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <div class="w-9 h-9 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-500">
+            👤
+          </div>
         </div>
       </header>
 
-      <main class="main-content">
+      <!-- Main Content -->
+      <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-neutral-50">
         <router-view></router-view>
       </main>
     </div>
@@ -72,192 +132,3 @@ const currentRouteName = computed(() => {
   return ''
 })
 </script>
-
-<style scoped>
-#app-layout {
-  display: flex;
-  width: 100%;
-  height: 100vh;
-  background-color: #f1f5f9; /* Slate 100 */
-}
-
-/* Sidebar */
-.sidebar {
-  width: 260px;
-  background: white;
-  border-right: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
-  flex-shrink: 0;
-  height: 100vh;
-  box-sizing: border-box;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.logo {
-  width: 32px;
-  height: auto;
-  object-fit: contain;
-}
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-
-.company {
-  font-weight: 700;
-  font-size: 1rem;
-  color: #1e293b; /* Slate 800 */
-}
-
-.tagline {
-  font-size: 0.75rem;
-  color: #64748b; /* Slate 500 */
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.nav-links {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-}
-
-/* Navigation Links */
-.sidebar a {
-  text-decoration: none;
-  color: #475569; /* Slate 600 - Enforce contrast */
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: all 0.2s ease;
-  font-size: 0.95rem;
-}
-
-.sidebar a .icon {
-  font-size: 1.1rem;
-  width: 24px;
-  text-align: center;
-}
-
-.sidebar a:hover {
-  background-color: #f8fafc;
-  color: #0f766e; /* Teal 700 */
-  transform: translateX(2px);
-}
-
-.sidebar a.router-link-active {
-  background-color: #0f766e; /* Teal 700 */
-  color: white !important; /* Force white text on active */
-  box-shadow: 0 4px 6px -1px rgba(15, 118, 110, 0.2);
-}
-
-.nav-footer {
-  margin-top: auto;
-  border-top: 1px solid #f1f5f9;
-  padding-top: 1rem;
-}
-
-/* Wrapper and Header */
-.content-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.top-bar {
-  height: 64px;
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2rem;
-  flex-shrink: 0;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.user-profile .avatar {
-  background: #f1f5f9;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
-}
-
-.main-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 2rem;
-  background-color: #f8fafc;
-}
-
-/* Mobile Toggle */
-.mobile-toggle {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #334155;
-  margin-right: 1rem;
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    z-index: 50;
-    transform: translateX(-100%);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  }
-  .sidebar.open { transform: translateX(0); }
-  .sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 40;
-  }
-  .mobile-toggle { display: block; }
-  .top-bar { padding: 0 1rem; }
-  .main-content { padding: 1rem; }
-}
-
-.admin-layout {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  background: #f1f5f9;
-  padding: 4rem 1rem;
-  overflow-y: auto;
-  box-sizing: border-box;
-}
-</style>
