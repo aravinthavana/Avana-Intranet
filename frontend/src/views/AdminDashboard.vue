@@ -66,175 +66,309 @@
 
     <div class="content">
        <!-- ANNOUNCEMENTS -->
-       <div v-if="tab==='announcements'">
-          <h3>Manage Announcements</h3>
-          <div class="card"> <!-- New Announcement Form -->
-            <h4>New Announcement</h4>
-            <input v-model="newAnnouncement.title" placeholder="Title" />
-            <textarea v-model="newAnnouncement.description" placeholder="Description"></textarea>
-            <input v-model="newAnnouncement.date" type="date" />
-            <label>
-              <input type="checkbox" v-model="newAnnouncement.important" style="width:auto;" /> Important
-            </label>
-            <br/><br/>
-            
-            <!-- Email Logic -->
-             <div style="background:#f0fbff; padding:10px; border:1px solid #cceeff; border-radius:4px; margin-bottom:10px;">
-                <label style="font-weight:bold;">
-                  <input type="checkbox" v-model="sendEmail" style="width:auto;" /> Send Email Notification ✔
-                </label>
-                <div v-if="sendEmail">
-                  <select v-model="selectedEmailGroup">
-                     <option :value="null">Select Recipient Group...</option>
-                     <option v-for="g in store.emailGroups" :key="g.id" :value="g">{{ g.name }}</option>
-                  </select>
-                </div>
-             </div>
-
-            <button @click="addAnnouncement">Publish</button>
+       <div v-if="tab==='announcements'" class="space-y-6">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xl font-semibold text-neutral-800">Manage Announcements</h3>
           </div>
+
+          <!-- New Announcement Form -->
+          <Card title="New Announcement">
+            <div class="space-y-4">
+              <Input v-model="newAnnouncement.title" label="Title" placeholder="e.g. Office Closure" />
+              
+              <div class="w-full">
+                <label class="block text-sm font-medium text-neutral-700 mb-1.5">Description</label>
+                <textarea 
+                  v-model="newAnnouncement.description" 
+                  rows="3"
+                  class="block w-full px-3 py-2 border border-neutral-300 rounded-lg shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors sm:text-sm"
+                  placeholder="Enter announcement details..."
+                ></textarea>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input type="date" v-model="newAnnouncement.date" label="Date" />
+                
+                <div class="flex items-center h-full pt-6">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" v-model="newAnnouncement.important" class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500" />
+                    <span class="text-sm font-medium text-neutral-700">Mark as Important</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Email Logic -->
+              <div class="bg-primary-50 p-4 rounded-lg border border-primary-100">
+                <label class="flex items-center gap-2 mb-2 cursor-pointer">
+                  <input type="checkbox" v-model="sendEmail" class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500" />
+                  <span class="font-semibold text-primary-900">Send Email Notification</span>
+                </label>
+                
+                <div v-if="sendEmail" class="mt-2">
+                   <select 
+                    v-model="selectedEmailGroup"
+                    class="block w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm"
+                   >
+                      <option :value="null">Select Recipient Group...</option>
+                      <option v-for="g in store.emailGroups" :key="g.id" :value="g">{{ g.name }}</option>
+                   </select>
+                </div>
+              </div>
+
+              <div class="flex justify-end pt-2">
+                <Button @click="addAnnouncement" variant="primary">Publish Announcement</Button>
+              </div>
+            </div>
+          </Card>
           
-          <div v-for="(item, idx) in store.announcements" :key="idx" class="card" style="display:flex; justify-content:space-between;">
-             <div>
-               <strong>{{ item.title }}</strong> ({{ item.date }})
-             </div>
-             <button @click="deleteAnnouncement(idx)" style="background:red;">Delete</button>
+          <!-- Announcements List -->
+          <div class="space-y-4">
+            <h4 class="text-lg font-medium text-neutral-700">Recent Announcements</h4>
+            <div v-if="store.announcements.length === 0" class="text-neutral-500 italic">No announcements found.</div>
+            
+            <Card 
+              v-for="(item, idx) in store.announcements" 
+              :key="idx" 
+              class="transition-all hover:shadow-md"
+            >
+              <div class="flex justify-between items-start gap-4">
+                 <div>
+                   <div class="flex items-center gap-2 mb-1">
+                     <span v-if="item.important" class="px-2 py-0.5 rounded text-xs font-medium bg-warning-100 text-warning-800">Important</span>
+                     <h5 class="font-semibold text-neutral-900">{{ item.title }}</h5>
+                   </div>
+                   <p class="text-sm text-neutral-600 mb-2 line-clamp-2">{{ item.description }}</p>
+                   <div class="text-xs text-neutral-500">Posted on {{ item.date }}</div>
+                 </div>
+                 <Button @click="deleteAnnouncement(idx)" variant="danger" size="sm">Delete</Button>
+              </div>
+            </Card>
           </div>
        </div>
 
         <!-- INTERCOM -->
-        <div v-if="tab==='intercom'">
-           <h3>Manage Intercom</h3>
+        <div v-if="tab==='intercom'" class="space-y-6">
+           <div class="flex justify-between items-center">
+             <h3 class="text-xl font-semibold text-neutral-800">Manage Intercom Directory</h3>
+           </div>
            
-           <!-- Search Bar for Admin -->
-           <input v-model="adminSearch" placeholder="Search directory..." style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd; border-radius:4px;" />
-
-           <!-- ADD NEW PERSON FORM (Only for creation now) -->
-           <div class="card" style="border:1px solid #4caf50;">
-             <h4 style="margin-top:0; color:#2e7d32;">Add New Person</h4>
-             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap:10px; align-items:center;">
-                <select v-model="newPerson.floor" style="padding:8px;">
-                   <option>Ground Floor</option>
-                   <option>1st Floor</option>
-                   <option>2nd Floor</option>
-                   <option>3rd Floor</option>
-                </select>
-                <input v-model="newPerson.name" placeholder="Name" style="padding:8px;" />
-                <input v-model="newPerson.department" placeholder="Department" style="padding:8px;" />
-                <input v-model="newPerson.extension" placeholder="Ext" style="width:80px; padding:8px;" />
-                <button @click="addPerson" style="background:#4caf50;">+ Add</button>
-             </div>
+           <!-- Search Bar -->
+           <div class="max-w-md">
+             <Input v-model="adminSearch" placeholder="Search directory..." />
            </div>
 
+           <!-- Add New Person Form -->
+           <Card title="Add New Person">
+             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <div class="md:col-span-1">
+                   <label class="block text-sm font-medium text-neutral-700 mb-1.5">Floor</label>
+                   <select 
+                    v-model="newPerson.floor" 
+                    class="block w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm"
+                   >
+                      <option>Ground Floor</option>
+                      <option>1st Floor</option>
+                      <option>2nd Floor</option>
+                      <option>3rd Floor</option>
+                   </select>
+                </div>
+                <div class="md:col-span-1">
+                  <Input v-model="newPerson.name" label="Name" placeholder="Full Name" />
+                </div>
+                <div class="md:col-span-1">
+                  <Input v-model="newPerson.department" label="Department" placeholder="Dept." />
+                </div>
+                <div class="md:col-span-1 flex gap-2">
+                  <div class="flex-1">
+                    <Input v-model="newPerson.extension" label="Ext" placeholder="123" />
+                  </div>
+                  <Button @click="addPerson" variant="primary" class="mb-[2px] h-[42px] px-6">Add</Button>
+                </div>
+             </div>
+           </Card>
+
            <!-- Grouped List View for Admin -->
-           <div class="admin-intercom-list">
-              <div v-for="(floorData, floorName) in groupedIntercom" :key="floorName" style="margin-bottom:20px;">
-                 <h4 style="background:#eee; padding:5px; border-bottom:2px solid #ccc; margin-bottom:0;">{{ floorName }}</h4>
-                 <div style="border:1px solid #eee; padding:10px;">
-                    <div v-for="item in floorData" :key="item.extension" style="display:flex; border-bottom:1px solid #f0f0f0; padding:8px 0; align-items:center;">
-                       <div style="width:60px; font-weight:bold; font-size:1.1rem; color:#555;">{{ item.extension }}</div>
-                       <div style="flex:1;">
-                          <!-- Loop People in this Extension -->
-                          <div v-for="(p, idx) in item.people" :key="p.id" class="person-row" style="margin-bottom:5px;">
-                             
-                             <!-- INLINE EDITING MODE -->
-                             <div v-if="editingId === p.id" class="edit-grid-row">
-                                <form @submit.prevent="saveEdit" style="display:contents">
-                                  <input v-model="editForm.name" placeholder="Name" class="edit-input" title="Name" />
-                                  <input v-model="editForm.department" placeholder="Dept" class="edit-input" title="Department" />
-                                  <select v-model="editForm.floor" class="edit-input">
-                                     <option>Ground Floor</option>
-                                     <option>1st Floor</option>
-                                     <option>2nd Floor</option>
-                                     <option>3rd Floor</option>
-                                  </select>
-                                  <input v-model="editForm.extension" placeholder="Ext" class="edit-input" style="text-align:center;" title="Extension" />
-                                  
-                                  <div style="display:flex; gap:5px; align-items:center;">
-                                    <button type="submit" style="background:#2196f3; color:white; border:none; padding:6px 12px; height:32px; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center;" title="Save">💾</button>
-                                    <button @click="cancelEdit" type="button" style="background:#f44336; color:white; border:none; padding:6px 12px; height:32px; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center;" title="Cancel">❌</button>
-                                  </div>
-                                </form>
-                             </div>
-
-                             <!-- READ MODE -->
-                             <div v-else style="display:flex; justify-content:space-between; align-items:center; padding:2px 0;">
-                                <div>
-                                   <strong>{{ p.name }}</strong> <small style="color:#777;">({{ p.department }})</small>
+           <div class="space-y-6">
+              <div v-for="(floorData, floorName) in groupedIntercom" :key="floorName" class="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+                 <div class="bg-neutral-50 px-6 py-3 border-b border-neutral-200">
+                   <h4 class="font-semibold text-neutral-700">{{ floorName }}</h4>
+                 </div>
+                 <div class="divide-y divide-neutral-100">
+                    <div v-for="item in floorData" :key="item.extension" class="p-4 hover:bg-neutral-50 transition-colors">
+                       <div class="flex items-start gap-4">
+                          <div class="flex-shrink-0 w-16 pt-1">
+                            <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-primary-100 text-primary-800">
+                              {{ item.extension }}
+                            </span>
+                          </div>
+                          <div class="flex-1 space-y-3">
+                             <!-- Loop People in this Extension -->
+                             <div v-for="(p, idx) in item.people" :key="p.id" class="relative group">
+                                
+                                <!-- INLINE EDITING MODE -->
+                                <div v-if="editingId === p.id" class="bg-neutral-50 p-3 rounded-lg border border-neutral-200 shadow-inner">
+                                   <form @submit.prevent="saveEdit" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                                      <div class="md:col-span-3">
+                                        <Input v-model="editForm.name" placeholder="Name" />
+                                      </div>
+                                      <div class="md:col-span-3">
+                                        <Input v-model="editForm.department" placeholder="Dept" />
+                                      </div>
+                                      <div class="md:col-span-3">
+                                         <select 
+                                          v-model="editForm.floor" 
+                                          class="block w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm"
+                                         >
+                                            <option>Ground Floor</option>
+                                            <option>1st Floor</option>
+                                            <option>2nd Floor</option>
+                                            <option>3rd Floor</option>
+                                         </select>
+                                      </div>
+                                      <div class="md:col-span-2">
+                                        <Input v-model="editForm.extension" placeholder="Ext" />
+                                      </div>
+                                      
+                                      <div class="md:col-span-1 flex gap-2 justify-end">
+                                        <button type="submit" class="text-primary-600 hover:text-primary-700 p-1" title="Save">
+                                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                        </button>
+                                        <button @click="cancelEdit" type="button" class="text-red-500 hover:text-red-700 p-1" title="Cancel">
+                                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                      </div>
+                                   </form>
                                 </div>
-                                <div style="display:flex; gap:5px;">
-                                   <button @click="startEdit(p)" style="background:transparent; border:1px solid orange; color:orange; padding:2px 6px; font-size:0.8rem; cursor:pointer;" title="Edit">✏️</button>
-                                   <button @click="deletePerson(p.id)" style="background:transparent; border:1px solid red; color:red; padding:2px 6px; font-size:0.8rem; cursor:pointer;" title="Delete">🗑️</button>
-                                </div>
-                             </div>
 
+                                <!-- READ MODE -->
+                                <div v-else class="flex justify-between items-center py-1">
+                                   <div class="flex items-center gap-2">
+                                      <span class="font-medium text-neutral-900">{{ p.name }}</span>
+                                      <span class="text-sm text-neutral-500">({{ p.department }})</span>
+                                   </div>
+                                   <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <button @click="startEdit(p)" class="text-neutral-400 hover:text-primary-600 p-1 transition-colors" title="Edit">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                      </button>
+                                      <button @click="deletePerson(p.id)" class="text-neutral-400 hover:text-red-600 p-1 transition-colors" title="Delete">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                      </button>
+                                   </div>
+                                </div>
+
+                             </div>
                           </div>
                        </div>
                     </div>
                  </div>
               </div>
            </div>
-       </div>
+        </div>
     
        <!-- EVENTS -->
-       <div v-if="tab==='events'">
-          <h3>Manage Events</h3>
-          <div class="card">
-             <input v-model="newEvent.name" placeholder="Event Name" style="margin-bottom:10px; display:block;" />
-             <input v-model="newEvent.date" type="date" style="margin-bottom:10px; margin-right:10px;" />
-             <input v-model="newEvent.time" type="time" style="margin-bottom:10px;" />
-             <input v-model="newEvent.location" placeholder="Location" style="display:block; margin-bottom:10px;" />
-             <button @click="addEvent">Add Event</button>
+       <div v-if="tab==='events'" class="space-y-6">
+          <div class="flex justify-between items-center">
+             <h3 class="text-xl font-semibold text-neutral-800">Manage Events</h3>
           </div>
-          <div v-for="(e, idx) in store.events" :key="idx" class="card" style="display:flex; justify-content:space-between; align-items:center;">
-             <div>
-                <strong>{{ e.name }}</strong><br/>
-                <small>{{ e.date }} @ {{ e.time }} ({{ e.location }})</small>
+
+          <!-- Add Event Form -->
+          <Card title="Add New Event">
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                   <Input v-model="newEvent.name" label="Event Name" placeholder="e.g. Annual Meeting" />
+                </div>
+                <Input type="date" v-model="newEvent.date" label="Date" />
+                <Input type="time" v-model="newEvent.time" label="Time" />
+                <div class="md:col-span-2">
+                   <Input v-model="newEvent.location" label="Location" placeholder="e.g. Conference Room A" />
+                </div>
+                <div class="md:col-span-2 flex justify-end mt-2">
+                   <Button @click="addEvent" variant="primary">Create Event</Button>
+                </div>
              </div>
-             <button @click="deleteEvent(idx)" style="background:red;">Delete</button>
+          </Card>
+
+          <!-- Events List -->
+          <div class="space-y-4">
+             <h4 class="text-lg font-medium text-neutral-700">Upcoming Events</h4>
+             <div v-if="store.events.length === 0" class="text-neutral-500 italic">No events scheduled.</div>
+
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card v-for="(e, idx) in store.events" :key="idx" class="relative group">
+                   <div class="flex justify-between items-start">
+                      <div>
+                         <h4 class="font-bold text-lg text-neutral-900 mb-1">{{ e.name }}</h4>
+                         <div class="flex flex-col gap-1 text-sm text-neutral-600">
+                             <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                {{ e.date }} at {{ e.time }}
+                             </span>
+                             <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                {{ e.location }}
+                             </span>
+                         </div>
+                      </div>
+                      <Button @click="deleteEvent(idx)" variant="danger" size="sm" class="opacity-0 group-hover:opacity-100 transition-opacity">Delete</Button>
+                   </div>
+                </Card>
+             </div>
           </div>
        </div>
 
        <!-- BOOKINGS -->
-       <div v-if="tab==='bookings'">
-          <h3>Hall Bookings</h3>
-          <div class="card">
-             <input v-model="newBooking.hall" placeholder="Hall Name (e.g. Main Hall)" style="display:block; margin-bottom:10px;" />
-             <input v-model="newBooking.booked_by" placeholder="Booked By" style="display:block; margin-bottom:10px;" />
-             <div style="margin-bottom:10px;">
-               <input v-model="newBooking.date" type="date" style="margin-right:10px;" />
-               <input v-model="newBooking.start_time" type="time" style="width:auto;" /> - 
-               <input v-model="newBooking.end_time" type="time" style="width:auto;" />
-             </div>
-             <button @click="addBooking">Book Hall</button>
+       <div v-if="tab==='bookings'" class="space-y-6">
+          <div class="flex justify-between items-center">
+             <h3 class="text-xl font-semibold text-neutral-800">Hall Bookings</h3>
           </div>
-          <table style="width:100%; text-align:left;">
-             <thead>
-               <tr>
-                 <th>Hall</th>
-                 <th>Date</th>
-                 <th>Time</th>
-                 <th>Booked By</th>
-                 <th>Action</th>
-               </tr>
-             </thead>
-             <tbody>
-               <tr v-for="(b, idx) in store.bookings" :key="idx">
-                 <td>{{ b.hall }}</td>
-                 <td>{{ b.date }}</td>
-                 <td>{{ b.start_time}} - {{ b.end_time }}</td>
-                 <td>{{ b.booked_by }}</td>
-                 <td><button @click="deleteBooking(idx)" style="background:red; padding:2px 5px;">X</button></td>
-               </tr>
-             </tbody>
-          </table>
-       </div>
-       
-       <!-- Feedback Toast -->
-       <div v-if="feedback" style="position:fixed; bottom:20px; right:20px; background:#4caf50; color:white; padding:10px 20px; border-radius:4px; box-shadow:0 2px 10px rgba(0,0,0,0.2); z-index:1000;">
-          {{ feedback }}
-       </div>
 
+          <Card title="New Booking">
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input v-model="newBooking.hall" label="Hall Name" placeholder="e.g. Main Hall" />
+                <Input v-model="newBooking.booked_by" label="Booked By" placeholder="Requester Name" />
+                <Input type="date" v-model="newBooking.date" label="Date" />
+                <div class="flex gap-2">
+                   <div class="flex-1">
+                      <Input type="time" v-model="newBooking.start_time" label="Start" />
+                   </div>
+                   <div class="flex-1">
+                      <Input type="time" v-model="newBooking.end_time" label="End" />
+                   </div>
+                </div>
+                <div class="md:col-span-2 flex justify-end mt-2">
+                   <Button @click="addBooking" variant="primary">Confirm Booking</Button>
+                </div>
+             </div>
+          </Card>
+
+          <div class="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+             <table class="min-w-full divide-y divide-neutral-200">
+                <thead class="bg-neutral-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Hall</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Time</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Booked By</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-neutral-200">
+                  <tr v-if="store.bookings.length === 0">
+                     <td colspan="5" class="px-6 py-4 text-center text-sm text-neutral-500 italic">No active bookings.</td>
+                  </tr>
+                  <tr v-for="(b, idx) in store.bookings" :key="idx" class="hover:bg-neutral-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">{{ b.hall }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">{{ b.date }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">{{ b.start_time}} - {{ b.end_time }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">{{ b.booked_by }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                       <button @click="deleteBooking(idx)" class="text-red-500 hover:text-red-700 font-medium">Cancel</button>
+                    </td>
+                  </tr>
+                </tbody>
+             </table>
+          </div>
+       </div>
     </div>
   </div>
 </template>
@@ -243,8 +377,13 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDataStore } from '../stores/data'
+import { useToast } from '../composables/useToast'
+import Button from '../components/ui/Button.vue'
+import Input from '../components/ui/Input.vue'
+import Card from '../components/ui/Card.vue'
 
 const store = useDataStore()
+const toast = useToast()
 const tab = ref('announcements')
 const router = useRouter()
 
@@ -257,9 +396,6 @@ const newBooking = ref({ hall: '', booked_by: '', date: '', start_time: '', end_
 // Email Logic
 const sendEmail = ref(false)
 const selectedEmailGroup = ref(null)
-
-// UI Feedback
-const feedback = ref('')
 
 onMounted(() => {
   store.fetchAll()
@@ -345,15 +481,19 @@ const groupedIntercom = computed(() => {
 const editForm = ref({})
 
 async function addPerson() {
-   if(!newPerson.value.name || !newPerson.value.extension) return alert('Name and Extension required')
+   if(!newPerson.value.name || !newPerson.value.extension) {
+     toast.warning('Name and Extension are required')
+     return
+   }
    
    // Create Mode Only
    const updated = [...store.intercom, { ...newPerson.value, id: Date.now() }]
-   await store.saveData('intercom', updated)
+   const success = await store.saveData('intercom', updated)
    
-   // Reset new person form
-   newPerson.value = { name: '', department: '', extension: '', floor: 'Ground Floor' }
-   showFeedback('Person added!')
+   if (success) {
+     newPerson.value = { name: '', department: '', extension: '', floor: 'Ground Floor' }
+     toast.success('Person added to directory')
+   }
 }
 
 // Inline Edit Logic
@@ -366,10 +506,12 @@ async function saveEdit() {
   if(!editForm.value.name) return
   
   const updated = store.intercom.map(p => p.id === editingId.value ? { ...editForm.value } : p)
-  await store.saveData('intercom', updated)
+  const success = await store.saveData('intercom', updated)
   
-  showFeedback('Updated successfully')
-  cancelEdit()
+  if (success) {
+    toast.success('Directory updated')
+    cancelEdit()
+  }
 }
 
 function cancelEdit() {
@@ -380,43 +522,52 @@ function cancelEdit() {
 async function deletePerson(id) {
    if(!confirm('Delete user?')) return
    const updated = store.intercom.filter(p => p.id !== id)
-   await store.saveData('intercom', updated)
+   const success = await store.saveData('intercom', updated)
+   if (success) toast.success('Person deleted')
 }
 
 // --- Feature: Events ---
 async function addEvent() {
-  if(!newEvent.value.name || !newEvent.value.date) return alert('Event Name and Date required')
+  if(!newEvent.value.name || !newEvent.value.date) {
+    toast.warning('Event Name and Date required')
+    return
+  }
   const updated = [...store.events, { ...newEvent.value, id: Date.now() }]
-  await store.saveData('events', updated)
-  newEvent.value = { name: '', date: '', time: '', location: '' }
-  showFeedback('Event created!')
+  const success = await store.saveData('events', updated)
+  
+  if (success) {
+    newEvent.value = { name: '', date: '', time: '', location: '' }
+    toast.success('Event created successfully')
+  }
 }
 async function deleteEvent(idx) {
   if(!confirm('Delete event?')) return
   const updated = [...store.events]
   updated.splice(idx, 1)
-  await store.saveData('events', updated)
+  const success = await store.saveData('events', updated)
+  if (success) toast.success('Event deleted')
 }
 
 // --- Feature: Bookings ---
 async function addBooking() {
-  if(!newBooking.value.hall || !newBooking.value.date) return alert('Hall and Date required')
+  if(!newBooking.value.hall || !newBooking.value.date) {
+    toast.warning('Hall and Date required')
+    return
+  }
   const updated = [...store.bookings, { ...newBooking.value, id: Date.now() }]
-  await store.saveData('bookings', updated)
-  newBooking.value = { hall: '', booked_by: '', date: '', start_time: '', end_time: '' }
-  showFeedback('Booking confirmed!')
+  const success = await store.saveData('bookings', updated)
+  
+  if (success) {
+    newBooking.value = { hall: '', booked_by: '', date: '', start_time: '', end_time: '' }
+    toast.success('Booking confirmed!')
+  }
 }
 async function deleteBooking(idx) {
   if(!confirm('Cancel booking?')) return
   const updated = [...store.bookings]
   updated.splice(idx, 1)
-  await store.saveData('bookings', updated)
-}
-
-// Helper
-function showFeedback(msg) {
-  feedback.value = msg
-  setTimeout(() => feedback.value = '', 3000)
+  const success = await store.saveData('bookings', updated)
+  if (success) toast.success('Booking cancelled')
 }
 
 function triggerEmail(recipientEmail, announcement) {
@@ -435,73 +586,3 @@ View full details on the Intranet Dashboard.
    window.location.href = `mailto:${recipientEmail}?subject=${subject}&body=${body}`
 }
 </script>
-
-<style scoped>
-.admin-header {
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.tabs { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; }
-.tabs button { 
-  background: transparent; 
-  color: var(--text-muted); 
-  margin-right: 1rem; 
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-weight: 500;
-}
-.tabs button:hover { background: var(--bg-page); color: var(--text-main); }
-.tabs button.active { background: var(--primary); color: white; }
-
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--primary);
-  color: var(--primary);
-}
-.btn-outline:hover {
-  background: var(--primary);
-  color: white;
-}
-
-.edit-grid-row {
-  display: grid;
-  grid-template-columns: 2fr 2fr 1.5fr 0.8fr auto;
-  gap: 15px; /* Increased gap */
-  align-items: center;
-  width: 100%;
-  padding: 8px 10px; /* Added horizontal padding */
-  background: #f9f9f9;
-  border-radius: 4px;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.05); /* Subtle depth */
-}
-.edit-input {
-  width: 100%;
-  padding: 0 8px; /* Horizontal padding only, height set explicitly */
-  height: 32px; /* Fixed height matching buttons */
-  line-height: 32px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  box-sizing: border-box;
-}
-
-@media (max-width: 768px) {
-  .edit-grid-row {
-    grid-template-columns: 1fr; /* Stack vertically on mobile */
-    gap: 10px;
-    padding: 10px;
-  }
-  .edit-grid-row input, .edit-grid-row select {
-    width: 100%;
-  }
-  .edit-grid-row div[style*="display:flex"] {
-     width: 100%;
-     display: grid !important; /* Force buttons to grid */
-     grid-template-columns: 1fr 1fr;
-     gap: 10px;
-  }
-}
-</style>
