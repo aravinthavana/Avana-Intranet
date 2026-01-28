@@ -1,18 +1,9 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Dashboard from '../views/Dashboard.vue'
 import Intercom from '../views/Intercom.vue'
-import Events from '../views/Events.vue'
-import Bookings from '../views/Bookings.vue'
 import AdminLogin from '../views/AdminLogin.vue'
-import AdminDashboard from '../views/AdminDashboard.vue'
-
 const routes = [
-  { path: '/', component: Dashboard },
-  { path: '/intercom', component: Intercom },
-  { path: '/events', component: Events },
-  { path: '/bookings', component: Bookings },
-  { path: '/admin', component: AdminLogin },
-  { path: '/admin/dashboard', component: AdminDashboard, meta: { requiresAuth: true } }
+  { path: '/', component: Intercom },
+  { path: '/admin', component: AdminLogin }
 ]
 
 const router = createRouter({

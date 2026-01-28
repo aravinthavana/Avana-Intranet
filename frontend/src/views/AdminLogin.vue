@@ -50,10 +50,15 @@
       </Button>
     </form>
     
-    <div class="mt-6 text-center">
-      <p class="text-xs text-neutral-500">
-        Default password: <code class="px-1.5 py-0.5 bg-neutral-100 rounded text-neutral-700">admin123</code>
-      </p>
+    <div class="mt-6 text-center space-y-4">
+      <Button
+        type="button"
+        variant="secondary"
+        full-width
+        @click="router.push('/')"
+      >
+        Back
+      </Button>
     </div>
   </Card>
 </template>
@@ -77,8 +82,8 @@ async function handleLogin() {
   
   try {
     await store.login(password.value)
-    // Login successful, navigate to dashboard
-    router.push('/admin/dashboard')
+    // Login successful, navigate to home (where edit mode will handle admin state)
+    router.push('/')
   } catch (e) {
     error.value = e.message || 'Login failed. Please check your password.'
   }

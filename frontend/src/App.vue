@@ -9,7 +9,7 @@
     
     <!-- Sidebar -->
     <nav 
-      class="w-64 bg-white border-r border-neutral-200 flex flex-col p-6 flex-shrink-0 h-screen transition-transform duration-300 ease-in-out fixed md:relative z-50"
+      class="w-64 bg-white border-r border-neutral-200 flex flex-col p-6 flex-shrink-0 h-screen transition-transform duration-300 ease-in-out fixed md:relative z-50 no-print"
       :class="{ '-translate-x-full md:translate-x-0': !isSidebarOpen, 'translate-x-0': isSidebarOpen }"
     >
       <!-- Brand -->
@@ -29,38 +29,8 @@
           class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200"
           active-class="!bg-primary-700 !text-white shadow-md"
         >
-          <span class="text-lg w-6 text-center">📊</span>
-          <span>Dashboard</span>
-        </router-link>
-        
-        <router-link 
-          to="/intercom" 
-          @click="isSidebarOpen = false"
-          class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200"
-          active-class="!bg-primary-700 !text-white shadow-md"
-        >
-          <span class="text-lg w-6 text-center">👥</span>
+          <Icon name="phone" size="md" />
           <span>Intercom Directory</span>
-        </router-link>
-        
-        <router-link 
-          to="/events" 
-          @click="isSidebarOpen = false"
-          class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200"
-          active-class="!bg-primary-700 !text-white shadow-md"
-        >
-          <span class="text-lg w-6 text-center">🎉</span>
-          <span>Events</span>
-        </router-link>
-        
-        <router-link 
-          to="/bookings" 
-          @click="isSidebarOpen = false"
-          class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200"
-          active-class="!bg-primary-700 !text-white shadow-md"
-        >
-          <span class="text-lg w-6 text-center">📅</span>
-          <span>Bookings</span>
         </router-link>
       </div>
 
@@ -69,10 +39,10 @@
         <router-link 
           to="/admin" 
           @click="isSidebarOpen = false"
-          class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200 admin-link"
+          class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200"
           active-class="!bg-primary-700 !text-white shadow-md"
         >
-          <span class="text-lg w-6 text-center">⚙️</span>
+          <Icon name="cog" size="md" />
           <span>Admin</span>
         </router-link>
       </div>
@@ -82,13 +52,13 @@
     <div 
       v-if="isSidebarOpen" 
       @click="isSidebarOpen = false"
-      class="fixed inset-0 bg-neutral-900/50 z-40 md:hidden"
+      class="fixed inset-0 bg-neutral-900/50 z-40 md:hidden no-print"
     ></div>
 
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
       <!-- Top Bar -->
-      <header class="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-4 md:px-8 flex-shrink-0">
+      <header class="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-4 md:px-8 flex-shrink-0 no-print">
         <div class="flex items-center gap-4">
           <button 
             @click="isSidebarOpen = !isSidebarOpen"
@@ -102,8 +72,16 @@
         </div>
         
         <div class="flex items-center gap-4">
-          <div class="w-9 h-9 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-500">
-            👤
+          <div v-if="isAdmin" class="flex items-center gap-3">
+            <span class="text-sm font-medium text-neutral-600 hidden md:block">Admin</span>
+            <button 
+              @click="logout" 
+              class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-danger bg-red-50 hover:bg-red-100 transition-colors"
+              title="Logout"
+            >
+              <Icon name="log-out" size="sm" />
+              <span>Logout</span>
+            </button>
           </div>
         </div>
       </header>
@@ -118,17 +96,29 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useDataStore } from './stores/data'
+import Icon from './components/ui/Icon.vue'
 
 const isSidebarOpen = ref(false)
 const route = useRoute()
+const router = useRouter()
+const store = useDataStore()
 
 const currentRouteName = computed(() => {
-  if (route.path === '/') return 'Dashboard'
-  if (route.path === '/intercom') return 'Intercom Directory'
-  if (route.path === '/events') return 'Events & Parties'
-  if (route.path === '/bookings') return 'Hall Bookings'
+  if (route.path === '/') return 'Intercom Directory'
   if (route.path.includes('admin')) return 'Admin Area'
-  return ''
+  return 'Intercom Directory'
 })
+
+const isAdmin = computed(() => {
+  return store.isAuthenticated()
+})
+
+function logout() {
+  store.logout()
+  router.push('/')
+  // Force reload to clear state and update UI
+  window.location.reload()
+}
 </script>
