@@ -179,11 +179,11 @@
     <!-- Print View (Hidden on Screen) -->
     <div class="print-only directory-sheet" id="print-area">
       <div class="sheet-header">
-        <h2>Avana Head Quarters Intercom List</h2>
+        <h2>Avana Head Office Intercom List</h2>
       </div>
 
       <div class="table-container">
-        <!-- LEFT COLUMN: Ground Floor & 1st Floor -->
+        <!-- LEFT COLUMN -->
         <table class="intercom-table left-table">
           <thead>
             <tr>
@@ -192,27 +192,25 @@
             </tr>
           </thead>
           <tbody>
-            <template v-for="floor in ['Ground Floor', '1st Floor']" :key="floor">
-              <template v-if="groupedIntercom[floor]">
-                <tr class="floor-row">
-                  <td colspan="2" class="floor-cell">{{ floor }}</td>
-                </tr>
-                <tr v-for="ext in groupedIntercom[floor]" :key="ext.extension">
-                  <td class="name-col">
-                    <span v-for="(person, idx) in ext.people" :key="person.id">
-                      <span class="person-name">{{ person.name }}</span>
-                      <span class="person-designation">({{ person.designation }})</span>
-                      <span v-if="idx < ext.people.length - 1">, </span>
-                    </span>
-                  </td>
-                  <td class="ext-col">{{ ext.extension }}</td>
-                </tr>
+            <tr v-for="(row, idx) in printLayout.left" :key="'left-' + idx" :class="{ 'floor-row': row.type === 'header' }">
+              <template v-if="row.type === 'header'">
+                <td colspan="2" class="floor-cell">{{ row.content }}</td>
               </template>
-            </template>
+              <template v-else>
+                <td class="name-col">
+                  <span v-for="(person, idx) in row.content.people" :key="person.id">
+                    <span class="person-name">{{ person.name }}</span>
+                    <span class="person-designation">({{ person.designation }})</span>
+                    <span v-if="idx < row.content.people.length - 1">, </span>
+                  </span>
+                </td>
+                <td class="ext-col">{{ row.content.extension }}</td>
+              </template>
+            </tr>
           </tbody>
         </table>
 
-        <!-- RIGHT COLUMN: 2nd Floor & 3rd Floor -->
+        <!-- RIGHT COLUMN -->
         <table class="intercom-table right-table">
           <thead>
             <tr>
@@ -221,23 +219,21 @@
             </tr>
           </thead>
           <tbody>
-            <template v-for="floor in ['2nd Floor', '3rd Floor']" :key="floor">
-              <template v-if="groupedIntercom[floor]">
-                <tr class="floor-row">
-                  <td colspan="2" class="floor-cell">{{ floor }}</td>
-                </tr>
-                <tr v-for="ext in groupedIntercom[floor]" :key="ext.extension">
-                  <td class="name-col">
-                    <span v-for="(person, idx) in ext.people" :key="person.id">
-                      <span class="person-name">{{ person.name }}</span>
-                      <span class="person-designation">({{ person.designation }})</span>
-                      <span v-if="idx < ext.people.length - 1">, </span>
-                    </span>
-                  </td>
-                  <td class="ext-col">{{ ext.extension }}</td>
-                </tr>
+            <tr v-for="(row, idx) in printLayout.right" :key="'right-' + idx" :class="{ 'floor-row': row.type === 'header' }">
+              <template v-if="row.type === 'header'">
+                <td colspan="2" class="floor-cell">{{ row.content }}</td>
               </template>
-            </template>
+              <template v-else>
+                <td class="name-col">
+                  <span v-for="(person, idx) in row.content.people" :key="person.id">
+                    <span class="person-name">{{ person.name }}</span>
+                    <span class="person-designation">({{ person.designation }})</span>
+                    <span v-if="idx < row.content.people.length - 1">, </span>
+                  </span>
+                </td>
+                <td class="ext-col">{{ row.content.extension }}</td>
+              </template>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -431,6 +427,33 @@ async function deletePerson(id) {
 function printDirectory() {
   window.print()
 }
+
+const printLayout = computed(() => {
+  const groups = groupedIntercom.value
+  const left = []
+  const right = []
+
+  const addFloor = (targetList, floorName, filterFn = null) => {
+    if (groups[floorName]) {
+      const items = filterFn ? groups[floorName].filter(filterFn) : groups[floorName]
+      if (items.length > 0) {
+        targetList.push({ type: 'header', content: floorName })
+        items.forEach(item => targetList.push({ type: 'item', content: item }))
+      }
+    }
+  }
+
+  // Left Column: 1st Floor + 2nd Floor (<= 121)
+  addFloor(left, '1st Floor')
+  addFloor(left, '2nd Floor', (item) => parseInt(item.extension) <= 121)
+
+  // Right Column: 2nd Floor (>= 122) + 3rd Floor + Ground Floor
+  addFloor(right, '2nd Floor', (item) => parseInt(item.extension) >= 122)
+  addFloor(right, '3rd Floor')
+  addFloor(right, 'Ground Floor')
+
+  return { left, right }
+})
 </script>
 
 <style scoped>
@@ -443,7 +466,6 @@ function printDirectory() {
 /* Print view styles (Specific to Intercom) */
 @page { 
   margin: 0.5cm; 
-  size: A4 landscape;
 }
 
 .directory-sheet { 
@@ -470,6 +492,7 @@ function printDirectory() {
   display: flex; 
   gap: 8px; 
   justify-content: space-between;
+  align-items: flex-start;
 }
 
 .intercom-table { 
@@ -535,5 +558,37 @@ function printDirectory() {
 
 .footer-note { 
   margin: 2px 0; 
+}
+@media print and (orientation: portrait) {
+  .directory-sheet {
+    font-size: 9pt !important;
+    padding: 5px !important;
+  }
+  
+  .sheet-header h2 {
+    font-size: 11pt !important;
+    margin-bottom: 2px !important;
+  }
+
+  .intercom-table th {
+    font-size: 9pt !important;
+    padding: 2px 4px !important;
+  }
+
+  .intercom-table td {
+    padding: 2px 4px !important;
+    font-size: 9pt !important;
+  }
+  
+  .floor-cell {
+    padding: 2px 4px !important;
+    font-size: 9pt !important;
+  }
+  
+  .sheet-footer {
+    margin-top: 5px !important;
+    padding-top: 3px !important;
+    font-size: 7pt !important;
+  }
 }
 </style>

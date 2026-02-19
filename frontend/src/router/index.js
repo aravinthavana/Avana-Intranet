@@ -1,8 +1,11 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Intercom from '../views/Intercom.vue'
 import AdminLogin from '../views/AdminLogin.vue'
+import Home from '../views/Home.vue'
+
 const routes = [
-  { path: '/', component: Intercom },
+  { path: '/', component: Home },
+  { path: '/intercom', component: Intercom },
   { path: '/admin', component: AdminLogin }
 ]
 

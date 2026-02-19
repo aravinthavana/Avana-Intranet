@@ -29,6 +29,16 @@
           class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200"
           active-class="!bg-primary-700 !text-white shadow-md"
         >
+          <Icon name="home" size="md" />
+          <span>Home</span>
+        </router-link>
+
+        <router-link 
+          to="/intercom" 
+          @click="isSidebarOpen = false"
+          class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200"
+          active-class="!bg-primary-700 !text-white shadow-md"
+        >
           <Icon name="phone" size="md" />
           <span>Intercom Directory</span>
         </router-link>
@@ -106,9 +116,10 @@ const router = useRouter()
 const store = useDataStore()
 
 const currentRouteName = computed(() => {
-  if (route.path === '/') return 'Intercom Directory'
+  if (route.path === '/') return 'Home'
+  if (route.path === '/intercom') return 'Intercom Directory'
   if (route.path.includes('admin')) return 'Admin Area'
-  return 'Intercom Directory'
+  return 'Avana Group Intranet'
 })
 
 const isAdmin = computed(() => {
