@@ -15,7 +15,8 @@ STATIC_FOLDER = os.path.join(os.path.dirname(__file__), '../frontend/dist')
 # Initialize Limiter
 limiter = Limiter(
     key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"],
+    # Increased limits for intranet usage
+    default_limits=["2000 per day", "500 per hour"],
     storage_uri="memory://"
 )
 
@@ -26,19 +27,32 @@ def create_app():
     env_secret = os.getenv('FLASK_SECRET_KEY')
     if not env_secret:
         if os.getenv('FLASK_ENV') == 'production':
+            # Strict enforcement in production
             raise ValueError("No FLASK_SECRET_KEY set for production environment")
+        
+        # Dev fallback
         app.logger.warning("Using insecure default SECRET_KEY. Set FLASK_SECRET_KEY in .env")
         app.config['SECRET_KEY'] = 'dev-secret-key'
     else:
         app.config['SECRET_KEY'] = env_secret
 
+    # JWT Secret
+    jwt_secret = os.getenv('JWT_SECRET_KEY')
+    if not jwt_secret:
+        if os.getenv('FLASK_ENV') == 'production':
+            raise ValueError("No JWT_SECRET_KEY set for production environment")
+        app.config['JWT_SECRET_KEY'] = 'dev-jwt-fallback-key'
+    else:
+        app.config['JWT_SECRET_KEY'] = jwt_secret
+
     # Initialize Extensions
     init_db(app)
     limiter.init_app(app)
 
-    # Configure CORS - Restriction recommended for production
+    # Configure CORS
+    # In production, this should be set to the actual domain(s)
     cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:5173,http://localhost:5000').split(',')
-    CORS(app, origins=cors_origins)
+    CORS(app, origins=cors_origins, supports_credentials=True)
 
     # Register Blueprints
     from routes.auth_routes import auth_bp
@@ -53,8 +67,15 @@ def create_app():
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
         response.headers['X-XSS-Protection'] = '1; mode=block'
+        
+        # CSP: Allow self, scripts/styles from self (and inline if needed for Vue/Vite dev, though purely static usually fine)
+        # Adjust as needed later
+        response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:;"
+        
         # Strict-Transport-Security (HSTS) - Uncomment for HTTPS production
-        # response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        # if os.getenv('FLASK_ENV') == 'production':
+        #     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        
         return response
 
     # Error Handlers

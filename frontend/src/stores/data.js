@@ -5,25 +5,20 @@ export const useDataStore = defineStore('data', () => {
     const intercom = ref([])
     const loading = ref(false)
     const error = ref(null)
-    // Make token reactive so UI updates immediately
-    const token = ref(localStorage.getItem('admin_token'))
+    // Auth state is now boolean, not token based
+    const isAuthenticatedState = ref(false)
 
-    // Base URL is relative
-    const API_BASE = '/api'
+    // Base URL: Use env var if set (e.g. for separate hosting), otherwise relative path (for same-origin serving)
+    const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
     /**
      * Get headers for authenticated requests
+     * (Cookies are handled automatically by browser)
      */
     function getAuthHeaders() {
-        const headers = {
+        return {
             'Content-Type': 'application/json'
         }
-
-        if (token.value) {
-            headers['Authorization'] = `Bearer ${token.value}`
-        }
-
-        return headers
     }
 
     /**
@@ -36,8 +31,7 @@ export const useDataStore = defineStore('data', () => {
 
             // Handle authentication errors
             if (response.status === 401) {
-                localStorage.removeItem('admin_token')
-                token.value = null
+                isAuthenticatedState.value = false
                 throw new Error('Authentication required. Please log in again.')
             }
 
@@ -56,7 +50,8 @@ export const useDataStore = defineStore('data', () => {
 
         try {
             await Promise.all([
-                fetchIntercom()
+                fetchIntercom(),
+                checkAuth() // Verify session on load
             ])
         } catch (e) {
             error.value = e.message
@@ -69,7 +64,8 @@ export const useDataStore = defineStore('data', () => {
     async function fetchIntercom() {
         try {
             const res = await fetch(`${API_BASE}/intercom`)
-            intercom.value = await handleResponse(res)
+            const json = await handleResponse(res)
+            intercom.value = json.data || [] // Handle wrapped response
         } catch (e) {
             console.error('Failed to fetch intercom:', e)
             throw e
@@ -167,7 +163,7 @@ export const useDataStore = defineStore('data', () => {
     }
 
     /**
-     * Login and get JWT token
+     * Login and set HttpOnly cookie
      */
     async function login(password) {
         loading.value = true
@@ -182,16 +178,13 @@ export const useDataStore = defineStore('data', () => {
 
             const data = await handleResponse(res)
 
-            if (data.token) {
-                localStorage.setItem('admin_token', data.token)
-                token.value = data.token
-                return true
-            }
-
-            return false
+            // Success (Cookie is set by server)
+            isAuthenticatedState.value = true
+            return true
         } catch (e) {
             error.value = e.message
             console.error('Login failed:', e)
+            isAuthenticatedState.value = false // Ensure state is synced
             throw e
         } finally {
             loading.value = false
@@ -199,18 +192,40 @@ export const useDataStore = defineStore('data', () => {
     }
 
     /**
-     * Logout and clear token
+     * Logout and clear cookie
      */
-    function logout() {
-        localStorage.removeItem('admin_token')
-        token.value = null
+    async function logout() {
+        try {
+            await fetch(`${API_BASE}/logout`, { method: 'POST' })
+        } catch (e) {
+            console.error('Logout failed (network error?):', e)
+        } finally {
+            isAuthenticatedState.value = false
+        }
     }
 
     /**
-     * Check if user is authenticated
+     * Check if session is valid from server
+     */
+    async function checkAuth() {
+        try {
+            const res = await fetch(`${API_BASE}/check-auth`)
+            if (res.ok) {
+                const data = await res.json()
+                isAuthenticatedState.value = !!data.authenticated
+            } else {
+                isAuthenticatedState.value = false
+            }
+        } catch (e) {
+            isAuthenticatedState.value = false
+        }
+    }
+
+    /**
+     * Check if user is authenticated (Frontend check)
      */
     function isAuthenticated() {
-        return !!token.value
+        return isAuthenticatedState.value
     }
 
     return {
@@ -227,6 +242,7 @@ export const useDataStore = defineStore('data', () => {
         deleteIntercom,
         login,
         logout,
+        checkAuth,
         changePassword,
         isAuthenticated
     }

@@ -19,29 +19,86 @@ def login():
     
     # Initialization: If no admin in DB, seed from env
     if not admin:
+        env_password = os.getenv('ADMIN_PASSWORD')
         env_hash = os.getenv('ADMIN_PASSWORD_HASH')
-        if not env_hash:
-             return jsonify({'error': 'Server configuration error'}), 500
         
-        # Determine if env var is already a hash or plain text (simple check)
-        # Assuming env var is HASHED as per previous conversation.
-        # But if it's the first run and the user wants to "remove default", 
-        # let's trust the env var is the initial seed hash.
+        if env_password:
+             # Seed with plain text password (hashed on the fly)
+             new_admin = AdminInfo(password_hash=hash_password(env_password))
+        elif env_hash:
+             # Seed with pre-hashed password
+             new_admin = AdminInfo(password_hash=env_hash)
+        else:
+             return jsonify({'error': 'Server configuration error: No admin password configured'}), 500
         
-        new_admin = AdminInfo(password_hash=env_hash)
         db.session.add(new_admin)
         db.session.commit()
         admin = new_admin
 
     if verify_password(password, admin.password_hash):
         token = generate_token('admin')
-        return jsonify({
+        
+        response = jsonify({
             'success': True, 
-            'token': token,
-            'message': 'Login successful'
+            'message': 'Login successful',
+            # 'token': token # Optional: remove token from body to encourage cookie usage, but keep for now if needed for debug
         })
+        
+        # Set HttpOnly cookie
+        # In production with HTTPS, set secure=True, samesite='Lax' or 'Strict'
+        is_production = os.getenv('FLASK_ENV') == 'production'
+        
+        response.set_cookie(
+            'access_token_cookie',
+            token,
+            httponly=True,
+            secure=is_production, 
+            samesite='Lax',
+            path='/'
+        )
+        
+        return response
     
     return jsonify({'error': 'Invalid credentials'}), 401
+
+@auth_bp.route('/logout', methods=['POST'])
+def logout():
+    """Logout admin by clearing cookie"""
+    response = jsonify({'success': True, 'message': 'Logged out successfully'})
+    response.set_cookie('access_token_cookie', '', expires=0, httponly=True, path='/')
+    return response
+
+@auth_bp.route('/check-auth', methods=['GET'])
+def check_auth():
+    """
+    Verify if the user is authenticated via cookie.
+    Returns 200 OK with {'authenticated': False} if not logged in,
+    to avoid browser console 401 errors.
+    """
+    token = None
+    
+    # 1. Check Authorization header
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        parts = auth_header.split()
+        if len(parts) == 2 and parts[0].lower() == 'bearer':
+            token = parts[1]
+    
+    # 2. Check Cookie (if no header)
+    if not token:
+        token = request.cookies.get('access_token_cookie')
+
+    if not token:
+        return jsonify({'authenticated': False})
+    
+    try:
+        # We need to import decode_token inside to avoid circular imports 
+        # or just import it at top provided auth.py is clean.
+        from auth import decode_token
+        payload = decode_token(token)
+        return jsonify({'authenticated': True, 'user': payload})
+    except Exception:
+        return jsonify({'authenticated': False})
 
 @auth_bp.route('/change-password', methods=['PUT'])
 @require_auth

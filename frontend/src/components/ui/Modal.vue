@@ -12,6 +12,7 @@
         <!-- Modal Container -->
         <div class="flex min-h-full items-center justify-center p-4">
           <div
+            ref="modalRef"
             :class="modalClasses"
             role="dialog"
             aria-modal="true"
@@ -51,7 +52,7 @@
 </template>
 
 <script setup>
-import { computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -98,26 +99,61 @@ function close() {
   emit('close')
 }
 
-function handleEscape(e) {
+const modalRef = ref(null)
+const previousActiveElement = ref(null)
+
+function trapFocus(e) {
+  if (!modalRef.value) return
+  
+  const focusableElements = modalRef.value.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  )
+  const firstElement = focusableElements[0]
+  const lastElement = focusableElements[focusableElements.length - 1]
+  
+  if (e.shiftKey) {
+    if (document.activeElement === firstElement) {
+      e.preventDefault()
+      lastElement.focus()
+    }
+  } else {
+    if (document.activeElement === lastElement) {
+      e.preventDefault()
+      firstElement.focus()
+    }
+  }
+}
+
+function handleKeydown(e) {
   if (props.closeOnEscape && e.key === 'Escape' && props.modelValue) {
     close()
+  }
+  if (e.key === 'Tab') {
+    trapFocus(e)
   }
 }
 
 watch(() => props.modelValue, (newVal) => {
   if (newVal) {
+    previousActiveElement.value = document.activeElement
     document.body.style.overflow = 'hidden'
+    // Wait for render then focus
+    setTimeout(() => {
+      const focusable = modalRef.value?.querySelector('input, button')
+      focusable?.focus()
+    }, 50)
   } else {
     document.body.style.overflow = ''
+    previousActiveElement.value?.focus()
   }
 })
 
 onMounted(() => {
-  document.addEventListener('keydown', handleEscape)
+  document.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleEscape)
+  document.removeEventListener('keydown', handleKeydown)
   document.body.style.overflow = ''
 })
 </script>

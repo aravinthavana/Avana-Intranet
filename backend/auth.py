@@ -5,7 +5,7 @@ Handles JWT token generation, validation, and password hashing
 import os
 import jwt
 import bcrypt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 from flask import request, jsonify
 
@@ -20,16 +20,16 @@ def verify_password(password: str, hashed: str) -> bool:
     except Exception:
         return False
 
-def generate_token(user_id: str = 'admin') -> str:
+def generate_token(user_id) -> str:
     """Generate a JWT token"""
-    expiration = datetime.utcnow() + timedelta(
-        hours=int(os.getenv('JWT_EXPIRATION_HOURS', 24))
+    expiration = datetime.now(timezone.utc) + timedelta(
+        hours=float(os.getenv('JWT_EXPIRATION_HOURS', 24))
     )
     
     payload = {
-        'user_id': user_id,
+        'sub': user_id,
         'exp': expiration,
-        'iat': datetime.utcnow()
+        'iat': datetime.now(timezone.utc)
     }
     
     secret = os.getenv('JWT_SECRET', 'fallback-secret-key')
@@ -49,19 +49,23 @@ def require_auth(f):
     """Decorator to require authentication for routes"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Get token from Authorization header
-        auth_header = request.headers.get('Authorization')
+        token = None
         
-        if not auth_header:
+        # 1. Check Authorization header
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            parts = auth_header.split()
+            if len(parts) == 2 and parts[0].lower() == 'bearer':
+                token = parts[1]
+        
+        # 2. Check Cookie (if no header)
+        if not token:
+            token = request.cookies.get('access_token_cookie')
+
+        if not token:
             return jsonify({'error': 'No authorization token provided'}), 401
         
         try:
-            # Expected format: "Bearer <token>"
-            parts = auth_header.split()
-            if len(parts) != 2 or parts[0].lower() != 'bearer':
-                return jsonify({'error': 'Invalid authorization header format'}), 401
-            
-            token = parts[1]
             payload = decode_token(token)
             
             # Add user info to request context

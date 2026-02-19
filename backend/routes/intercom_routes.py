@@ -10,7 +10,10 @@ def get_intercom():
     """Get intercom directory"""
     try:
         records = db.session.execute(db.select(Intercom).order_by(Intercom.name)).scalars().all()
-        return jsonify([item.to_dict() for item in records])
+        return jsonify({
+            'data': [item.to_dict() for item in records],
+            'count': len(records)
+        })
     except Exception as e:
         current_app.logger.error(f"Database error: {e}")
         return jsonify({'error': 'Database error'}), 500
@@ -25,7 +28,7 @@ def add_person():
         
         person = Intercom(
             name=data.get('name'),
-            department=data.get('department'),
+            designation=data.get('designation'),
             extension=data.get('extension'),
             floor=data.get('floor')
         )
@@ -52,7 +55,7 @@ def update_person(id):
         data = schema.load(request.json)
         
         person.name = data.get('name')
-        person.department = data.get('department')
+        person.designation = data.get('designation')
         person.extension = data.get('extension')
         person.floor = data.get('floor')
         

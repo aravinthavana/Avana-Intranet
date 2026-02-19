@@ -10,8 +10,8 @@ db = SQLAlchemy(model_class=Base)
 
 class Intercom(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
-    department: Mapped[str] = mapped_column(String(100), nullable=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    designation: Mapped[str] = mapped_column(String(100), nullable=True)
     extension: Mapped[str] = mapped_column(String(20), nullable=False)
     floor: Mapped[str] = mapped_column(String(50), nullable=True)
 
@@ -19,7 +19,7 @@ class Intercom(db.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'department': self.department,
+            'designation': self.designation,
             'extension': self.extension,
             'floor': self.floor
         }

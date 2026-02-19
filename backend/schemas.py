@@ -10,7 +10,7 @@ class IntercomPersonSchema(Schema):
 
     id = fields.Int(dump_only=True)
     name = fields.Str(required=True, validate=validate.Length(min=1, max=100))
-    department = fields.Str(load_default="", validate=validate.Length(max=100))
+    designation = fields.Str(load_default="", validate=validate.Length(max=100))
     extension = fields.Str(required=True, validate=validate.Length(min=1, max=10))
     floor = fields.Str(required=True, validate=validate.OneOf([
         'Ground Floor', '1st Floor', '2nd Floor', '3rd Floor', 'Other'

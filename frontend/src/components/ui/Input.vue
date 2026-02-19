@@ -14,6 +14,7 @@
         :disabled="disabled"
         :required="required"
         :class="inputClasses"
+        v-bind="$attrs"
         @input="$emit('update:modelValue', $event.target.value)"
         @blur="$emit('blur')"
         @focus="$emit('focus')"
@@ -37,8 +38,14 @@
   </div>
 </template>
 
+<script>
+export default {
+  inheritAttrs: false
+}
+</script>
+
 <script setup>
-import { computed } from 'vue'
+import { computed, useAttrs } from 'vue'
 
 const props = defineProps({
   id: String,
@@ -59,12 +66,15 @@ const props = defineProps({
 
 defineEmits(['update:modelValue', 'blur', 'focus'])
 
+const attrs = useAttrs()
+
 const computedType = computed(() => {
   if (props.type === 'password' && props.showPassword) {
     return 'text'
   }
   return props.type
 })
+
 
 const inputClasses = computed(() => {
   const base = 'block w-full px-3 py-2 border rounded-lg shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors sm:text-sm'

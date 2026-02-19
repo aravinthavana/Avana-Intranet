@@ -9,83 +9,86 @@
         </div>
         
         <div class="flex flex-wrap items-center gap-3">
-          <input 
-            v-model="searchQuery" 
-            name="search"
-            placeholder="Search by name, department, or extension..." 
-            class="w-full md:w-auto md:min-w-[300px] px-4 py-3 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all duration-200"
+          <Input 
+            v-model="searchTerm" 
+            placeholder="Search by name, designation, or extension..." 
+            containerClass="w-full md:w-auto md:min-w-[300px]"
+            aria-label="Search directory"
           />
           
           <template v-if="isAdmin">
-            <button @click="showPasswordModal = true" class="inline-flex items-center gap-2 px-5 py-3 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 hover:border-neutral-400 transition-all duration-200" title="Change Password">
+            <Button variant="secondary" @click="showPasswordModal = true" title="Change Password">
               <Icon name="cog" size="sm" />
-            </button>
+            </Button>
 
-            <button @click="toggleEditMode" class="inline-flex items-center gap-2 px-5 py-3 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 hover:border-neutral-400 transition-all duration-200">
-              <Icon :name="isEditMode ? 'x' : 'edit'" size="sm" />
+            <Button variant="secondary" @click="toggleEditMode">
+              <Icon :name="isEditMode ? 'x' : 'edit'" size="sm" class="mr-2" />
               <span>{{ isEditMode ? 'Cancel' : 'Edit Mode' }}</span>
-            </button>
+            </Button>
           </template>
           
-          <button @click="printDirectory" class="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg shadow-sm hover:-translate-y-px hover:shadow-md transition-all duration-200">
-            <Icon name="print" size="sm" />
+          <Button @click="printDirectory">
+            <Icon name="print" size="sm" class="mr-2" />
             <span>Print</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>
 
     <!-- Password Change Modal -->
-    <div v-if="showPasswordModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 animate-fade-in relative">
-        <button @click="showPasswordModal = false" class="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600">
-          <Icon name="x" size="sm" />
-        </button>
-        
-        <h3 class="text-xl font-bold text-neutral-900 mb-6">Change Admin Password</h3>
-        
-        <div class="space-y-4">
-          <div class="space-y-1">
-            <label class="text-sm font-medium text-neutral-700">Current Password</label>
-            <input type="password" v-model="passwordForm.old" class="w-full px-4 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none" placeholder="Enter current password" />
-          </div>
-          
-          <div class="space-y-1">
-            <label class="text-sm font-medium text-neutral-700">New Password</label>
-            <input type="password" v-model="passwordForm.new" class="w-full px-4 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none" placeholder="Enter new password (min 6 chars)" />
-          </div>
-        </div>
-        
-        <div class="flex gap-3 mt-8">
-          <button @click="changeAdminPassword" class="flex-1 px-4 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors">
-            Update Password
-          </button>
-          <button @click="showPasswordModal = false" class="flex-1 px-4 py-2 bg-white border border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors">
-            Cancel
-          </button>
-        </div>
+    <!-- Password Change Modal -->
+    <Modal v-model="showPasswordModal" title="Change Admin Password">
+      <div class="space-y-4">
+        <Input 
+          type="password" 
+          v-model="passwordForm.old" 
+          label="Current Password" 
+          placeholder="Enter current password" 
+        />
+        <Input 
+          type="password" 
+          v-model="passwordForm.new" 
+          label="New Password" 
+          placeholder="Enter new password (min 6 chars)" 
+        />
       </div>
-    </div>
+      
+      <template #footer>
+        <div class="flex gap-3 justify-end">
+          <Button variant="ghost" @click="showPasswordModal = false">
+            Cancel
+          </Button>
+          <Button @click="changeAdminPassword">
+            Update Password
+          </Button>
+        </div>
+      </template>
+    </Modal>
 
+    <!-- Add New Person Form (Edit Mode Only) -->
     <!-- Add New Person Form (Edit Mode Only) -->
     <div v-if="isEditMode" class="bg-white rounded-xl shadow-card p-6 mb-6 border-l-4 border-primary-500 no-print">
       <h3 class="text-xl font-semibold text-neutral-800 mb-6">Add New Person</h3>
       <div class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 items-end">
-        <select v-model="newPerson.floor" name="new-floor" class="w-full px-4 py-3 text-sm bg-white border border-neutral-300 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all duration-200">
-          <option>Ground Floor</option>
-          <option>1st Floor</option>
-          <option>2nd Floor</option>
-          <option>3rd Floor</option>
-        </select>
+        <div class="w-full">
+           <!-- Native select using styles similar to Input component for consistency since Input doesn't support select yet -->
+           <label for="floor-select" class="sr-only">Floor</label>
+           <select id="floor-select" v-model="newPerson.floor" class="block w-full px-3 py-2 border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white h-[42px]">
+            <option>Ground Floor</option>
+            <option>1st Floor</option>
+            <option>2nd Floor</option>
+            <option>3rd Floor</option>
+          </select>
+        </div>
         
-        <input v-model="newPerson.name" name="new-name" placeholder="Full Name" class="w-full px-4 py-3 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all duration-200" />
-        <input v-model="newPerson.department" name="new-dept" placeholder="Department" class="w-full px-4 py-3 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all duration-200" />
-        <input v-model="newPerson.extension" name="new-ext" placeholder="Extension" class="w-full px-4 py-3 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all duration-200" />
+        <Input v-model="newPerson.name" placeholder="Full Name" />
+        <Input v-model="newPerson.designation" placeholder="Designation" />
+        <Input v-model="newPerson.extension" placeholder="Extension" />
         
-        <button @click="addPerson" class="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg shadow-sm hover:-translate-y-px hover:shadow-md transition-all duration-200">
-          <Icon name="plus" size="sm" />
+        <Button @click="addPerson">
+          <Icon name="plus" size="sm" class="mr-2" />
           <span>Add Person</span>
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -127,22 +130,20 @@
                   <div class="flex flex-col gap-3">
                     <div class="space-y-1">
                       <label class="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">Name</label>
-                      <input v-model="editForm.name" class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none" placeholder="Full Name" />
+                      <Input v-model="editForm.name" placeholder="Full Name" />
                     </div>
                     <div class="space-y-1">
-                      <label class="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">Department</label>
-                      <input v-model="editForm.department" class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none" placeholder="Department" />
+                      <label class="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">Designation</label>
+                      <Input v-model="editForm.designation" placeholder="Designation" />
                     </div>
                     
                     <div class="flex gap-2 pt-2">
-                      <button @click="saveEdit" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 transition-colors">
-                        <Icon name="check" size="sm" />
-                        Save
-                      </button>
-                      <button @click="cancelEdit" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-neutral-200 text-neutral-600 text-xs font-medium rounded-lg hover:bg-neutral-50 transition-colors">
-                        <Icon name="x" size="sm" />
-                        Cancel
-                      </button>
+                       <Button size="sm" @click="saveEdit" class="flex-1">
+                        <Icon name="check" size="sm" class="mr-1" /> Save
+                       </Button>
+                       <Button size="sm" variant="outline" @click="cancelEdit" class="flex-1">
+                        <Icon name="x" size="sm" class="mr-1" /> Cancel
+                       </Button>
                     </div>
                   </div>
                 </div>
@@ -155,15 +156,15 @@
                   
                   <div class="flex flex-col min-w-0 flex-1">
                     <span class="font-semibold text-neutral-900 text-sm truncate">{{ person.name }}</span>
-                    <span class="text-xs text-neutral-500 truncate">{{ person.department }}</span>
+                    <span class="text-xs text-neutral-500 truncate">{{ person.designation }}</span>
                   </div>
 
                   <!-- Actions -->
                   <div v-if="isEditMode" class="flex items-center gap-1 opacity-100">
-                    <button @click="startEdit(person)" class="p-1.5 text-neutral-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Edit">
+                    <button @click="startEdit(person)" class="p-1.5 text-neutral-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Edit" :aria-label="`Edit ${person.name}`">
                       <Icon name="edit" size="xs" />
                     </button>
-                    <button @click="deletePerson(person.id)" class="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                    <button @click="deletePerson(person.id)" class="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete" :aria-label="`Delete ${person.name}`">
                       <Icon name="trash" size="xs" />
                     </button>
                   </div>
@@ -200,7 +201,7 @@
                   <td class="name-col">
                     <span v-for="(person, idx) in ext.people" :key="person.id">
                       <span class="person-name">{{ person.name }}</span>
-                      <span class="person-designation">({{ person.department }})</span>
+                      <span class="person-designation">({{ person.designation }})</span>
                       <span v-if="idx < ext.people.length - 1">, </span>
                     </span>
                   </td>
@@ -229,7 +230,7 @@
                   <td class="name-col">
                     <span v-for="(person, idx) in ext.people" :key="person.id">
                       <span class="person-name">{{ person.name }}</span>
-                      <span class="person-designation">({{ person.department }})</span>
+                      <span class="person-designation">({{ person.designation }})</span>
                       <span v-if="idx < ext.people.length - 1">, </span>
                     </span>
                   </td>
@@ -252,23 +253,38 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useDataStore } from '../stores/data'
 import { useToast } from '../composables/useToast'
 import Icon from '../components/ui/Icon.vue'
+import Button from '../components/ui/Button.vue'
+import Input from '../components/ui/Input.vue'
+import Modal from '../components/ui/Modal.vue'
 
 const store = useDataStore()
 const toast = useToast()
 const route = useRoute()
 
+const searchTerm = ref('')
 const searchQuery = ref('')
+let debounceTimeout = null
+
+// Debounce search to prevent excessive re-renders/filtering
+watch(searchTerm, (newValue) => {
+  if (debounceTimeout) clearTimeout(debounceTimeout)
+  debounceTimeout = setTimeout(() => {
+    searchQuery.value = newValue
+  }, 300)
+})
+
 const isEditMode = ref(false)
 const showPasswordModal = ref(false)
 const passwordForm = ref({ old: '', new: '' })
 const editingId = ref(null)
 const editForm = ref({})
-const newPerson = ref({ name: '', department: '', extension: '', floor: 'Ground Floor' })
+
+const newPerson = ref({ name: '', designation: '', extension: '', floor: 'Ground Floor' })
 
 const isAdmin = computed(() => {
   return store.isAuthenticated()
@@ -303,7 +319,7 @@ const filteredIntercom = computed(() => {
   
   return store.intercom.filter(p => {
     return p.name.toLowerCase().includes(query) ||
-           p.department.toLowerCase().includes(query) ||
+           (p.designation && p.designation.toLowerCase().includes(query)) ||
            p.extension.includes(query) ||
            p.floor?.toLowerCase().includes(query)
   })
@@ -376,7 +392,7 @@ async function addPerson() {
   const success = await store.addIntercom(newPerson.value)
   
   if (success) {
-    newPerson.value = { name: '', department: '', extension: '', floor: 'Ground Floor' }
+    newPerson.value = { name: '', designation: '', extension: '', floor: 'Ground Floor' }
     toast.success('Person added to directory')
   }
 }
@@ -434,7 +450,7 @@ function printDirectory() {
   background: white; 
   padding: 10px;
   font-family: Arial, sans-serif;
-  font-size: 9pt;
+  font-size: 12pt;
 }
 
 .sheet-header { 
@@ -445,7 +461,7 @@ function printDirectory() {
 }
 
 .sheet-header h2 { 
-  font-size: 11pt !important;
+  font-size: 14pt !important;
   margin: 0 !important;
   font-weight: bold;
 }
@@ -459,7 +475,7 @@ function printDirectory() {
 .intercom-table { 
   width: 49%; 
   border-collapse: collapse;
-  font-size: 8pt;
+  font-size: 11pt;
 }
 
 .intercom-table th { 
@@ -468,11 +484,11 @@ function printDirectory() {
   padding: 3px 5px;
   text-align: left;
   font-weight: bold;
-  font-size: 8.5pt;
+  font-size: 11.5pt;
 }
 
 .intercom-table td { 
-  padding: 2px 5px;
+  padding: 4px 5px;
   border-bottom: 1px solid #ddd;
 }
 
@@ -483,7 +499,7 @@ function printDirectory() {
 
 .floor-cell { 
   padding: 3px 5px !important;
-  font-size: 8.5pt;
+  font-size: 11.5pt;
 }
 
 .name-col { 
@@ -501,8 +517,7 @@ function printDirectory() {
 }
 
 .person-designation { 
-  font-style: italic; 
-  color: #555;
+  display: none;
 }
 
 .sheet-footer { 
