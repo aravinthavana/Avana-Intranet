@@ -49,10 +49,7 @@ export const useDataStore = defineStore('data', () => {
         error.value = null
 
         try {
-            await Promise.all([
-                fetchIntercom(),
-                checkAuth() // Verify session on load
-            ])
+            await fetchIntercom()
         } catch (e) {
             error.value = e.message
             console.error('Failed to fetch data:', e)
@@ -208,16 +205,24 @@ export const useDataStore = defineStore('data', () => {
      * Check if session is valid from server
      */
     async function checkAuth() {
+        // Only verify with server if we think we are already authenticated
+        // This prevents resetting auth state on every page load due to cookie issues
+        if (!isAuthenticatedState.value) return
         try {
-            const res = await fetch(`${API_BASE}/check-auth`)
+            const res = await fetch(`${API_BASE}/check-auth`, {
+                credentials: 'include'
+            })
             if (res.ok) {
                 const data = await res.json()
-                isAuthenticatedState.value = !!data.authenticated
-            } else {
-                isAuthenticatedState.value = false
+                // Only clear auth if server explicitly says not authenticated
+                if (!data.authenticated) {
+                    isAuthenticatedState.value = false
+                }
             }
+            // If request fails (network error), keep current state
         } catch (e) {
-            isAuthenticatedState.value = false
+            // Network error - keep current auth state, don't log out
+            console.warn('checkAuth network error, keeping current state:', e)
         }
     }
 
