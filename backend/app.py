@@ -117,5 +117,12 @@ if __name__ == '__main__':
     data_dir = os.path.join(os.path.dirname(__file__), 'data')
     os.makedirs(data_dir, exist_ok=True)
     
-    debug_mode = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
-    app.run(host='0.0.0.0', port=5000, debug=debug_mode)
+    fl_env = os.getenv('FLASK_ENV', 'production')
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    
+    if fl_env == 'development' or debug_mode:
+        app.run(host='0.0.0.0', port=5000, debug=True)
+    else:
+        from waitress import serve
+        print("Starting Waitress production server on http://0.0.0.0:5000")
+        serve(app, host='0.0.0.0', port=5000)
