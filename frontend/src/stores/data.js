@@ -5,8 +5,8 @@ export const useDataStore = defineStore('data', () => {
     const intercom = ref([])
     const loading = ref(false)
     const error = ref(null)
-    // Auth state is now boolean, not token based
-    const isAuthenticatedState = ref(false)
+    // Auth state: check localStorage first so it persists across navigation/refresh
+    const isAuthenticatedState = ref(!!localStorage.getItem('admin_token'))
 
     // Base URL: Use env var if set (e.g. for separate hosting), otherwise relative path (for same-origin serving)
     const API_BASE = import.meta.env.VITE_API_URL || '/api'
@@ -179,8 +179,9 @@ export const useDataStore = defineStore('data', () => {
 
             const data = await handleResponse(res)
 
-            // Success (Cookie is set by server)
+            // Success: persist auth to localStorage so it survives page refresh/navigation
             isAuthenticatedState.value = true
+            localStorage.setItem('admin_token', 'authenticated')
             return true
         } catch (e) {
             error.value = e.message
@@ -202,6 +203,7 @@ export const useDataStore = defineStore('data', () => {
             console.error('Logout failed (network error?):', e)
         } finally {
             isAuthenticatedState.value = false
+            localStorage.removeItem('admin_token')
         }
     }
 
@@ -234,7 +236,8 @@ export const useDataStore = defineStore('data', () => {
      * Check if user is authenticated (Frontend check)
      */
     function isAuthenticated() {
-        return isAuthenticatedState.value
+        // Check both reactive state and localStorage for resilience
+        return isAuthenticatedState.value || !!localStorage.getItem('admin_token')
     }
 
     return {
