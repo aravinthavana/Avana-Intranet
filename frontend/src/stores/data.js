@@ -60,7 +60,7 @@ export const useDataStore = defineStore('data', () => {
 
     async function fetchIntercom() {
         try {
-            const res = await fetch(`${API_BASE}/intercom`)
+            const res = await fetch(`${API_BASE}/intercom`, { credentials: 'include' })
             const json = await handleResponse(res)
             intercom.value = json.data || [] // Handle wrapped response
         } catch (e) {
@@ -78,6 +78,7 @@ export const useDataStore = defineStore('data', () => {
             const res = await fetch(`${API_BASE}/intercom`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
+                credentials: 'include',
                 body: JSON.stringify(person)
             })
             await handleResponse(res)
@@ -101,6 +102,7 @@ export const useDataStore = defineStore('data', () => {
             const res = await fetch(`${API_BASE}/intercom/${id}`, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
+                credentials: 'include',
                 body: JSON.stringify(person)
             })
             await handleResponse(res)
@@ -123,7 +125,8 @@ export const useDataStore = defineStore('data', () => {
         try {
             const res = await fetch(`${API_BASE}/intercom/${id}`, {
                 method: 'DELETE',
-                headers: getAuthHeaders()
+                headers: getAuthHeaders(),
+                credentials: 'include'
             })
             await handleResponse(res)
             await fetchIntercom()
@@ -170,6 +173,7 @@ export const useDataStore = defineStore('data', () => {
             const res = await fetch(`${API_BASE}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ password })
             })
 
@@ -193,7 +197,7 @@ export const useDataStore = defineStore('data', () => {
      */
     async function logout() {
         try {
-            await fetch(`${API_BASE}/logout`, { method: 'POST' })
+            await fetch(`${API_BASE}/logout`, { method: 'POST', credentials: 'include' })
         } catch (e) {
             console.error('Logout failed (network error?):', e)
         } finally {

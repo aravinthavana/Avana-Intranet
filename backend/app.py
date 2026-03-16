@@ -70,7 +70,14 @@ def create_app():
         
         # CSP: Allow self, scripts/styles from self (and inline if needed for Vue/Vite dev, though purely static usually fine)
         # Adjust as needed later
-        response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:;"
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data: blob:; "
+            "connect-src 'self';"
+        )
         
         # Strict-Transport-Security (HSTS) - Uncomment for HTTPS production
         # if os.getenv('FLASK_ENV') == 'production':
