@@ -46,13 +46,12 @@ def login():
         
         # Set HttpOnly cookie
         # In production with HTTPS, set secure=True, samesite='Lax' or 'Strict'
-        is_production = os.getenv('FLASK_ENV') == 'production'
         
         response.set_cookie(
             'access_token_cookie',
             token,
             httponly=True,
-            secure=is_production, 
+            secure=False, # Must be false since the intranet runs on HTTP locally
             samesite='Lax',
             path='/'
         )

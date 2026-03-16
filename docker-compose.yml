@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  intranet:
+    image: office-intranet:latest
+    container_name: office-intranet
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_SECRET_KEY=avana_intranet_secret_key_123!
+      - JWT_SECRET_KEY=avana_intranet_jwt_fallback_key_456!
+    volumes:
+      - intranet_data:/app/backend/data
+    restart: unless-stopped
+
+volumes:
+  intranet_data:
+
