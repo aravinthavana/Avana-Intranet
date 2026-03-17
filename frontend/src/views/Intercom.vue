@@ -16,9 +16,7 @@
             aria-label="Search directory"
           />
           
-          <!-- Admin Controls (visible once password entered) -->
           <template v-if="isAdmin">
-            <span class="text-xs text-green-600 font-semibold px-2 py-1 bg-green-50 rounded-lg border border-green-200">✓ Admin</span>
             <Button variant="secondary" @click="showPasswordModal = true" title="Change Password">
               <Icon name="cog" size="sm" />
             </Button>
@@ -26,30 +24,6 @@
               <Icon :name="isEditMode ? 'x' : 'edit'" size="sm" class="mr-2" />
               <span>{{ isEditMode ? 'Cancel' : 'Edit Mode' }}</span>
             </Button>
-            <Button variant="ghost" @click="isAdmin = false; isEditMode = false" title="Lock">
-              <Icon name="log-out" size="sm" />
-            </Button>
-          </template>
-
-          <!-- Inline Admin Login (show when not logged in) -->
-          <template v-else>
-            <div v-if="showAdminInput" class="flex items-center gap-2">
-              <input
-                v-model="adminPasswordInput"
-                type="password"
-                placeholder="Admin password"
-                id="admin-pw-inline"
-                class="px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 w-40"
-                @keyup.enter="handleAdminLogin"
-                autofocus
-              />
-              <Button size="sm" @click="handleAdminLogin" :loading="adminLoading">Enter</Button>
-              <Button size="sm" variant="ghost" @click="showAdminInput = false; adminPasswordInput = ''; adminError = ''">✕</Button>
-            </div>
-            <div v-if="adminError" class="text-xs text-red-500">{{ adminError }}</div>
-            <button v-if="!showAdminInput" @click="showAdminInput = true" class="p-2 text-neutral-400 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors" title="Admin Login">
-              <Icon name="cog" size="sm" />
-            </button>
           </template>
 
           <Button @click="printDirectory">
@@ -287,38 +261,8 @@ const store = useDataStore()
 const toast = useToast()
 const route = useRoute()
 
-// ── Inline admin auth (self-contained, no router/store dependency) ──
-const isAdmin = ref(false)
-const showAdminInput = ref(false)
-const adminPasswordInput = ref('')
-const adminError = ref('')
-const adminLoading = ref(false)
-
-async function handleAdminLogin() {
-  if (!adminPasswordInput.value) return
-  adminLoading.value = true
-  adminError.value = ''
-  try {
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: adminPasswordInput.value })
-    })
-    if (res.ok) {
-      isAdmin.value = true
-      showAdminInput.value = false
-      adminPasswordInput.value = ''
-      toast.success('Admin mode enabled')
-    } else {
-      adminError.value = 'Wrong password'
-    }
-  } catch {
-    adminError.value = 'Login failed'
-  } finally {
-    adminLoading.value = false
-  }
-}
-// ────────────────────────────────────────────────────────
+// Admin state from store (set after login via /#/admin)
+const isAdmin = computed(() => store.isAuthenticated())
 
 const searchTerm = ref('')
 const searchQuery = ref('')
