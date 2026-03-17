@@ -111,7 +111,12 @@ def create_app():
             return send_from_directory(app.static_folder, path)
         else:
             if os.path.exists(os.path.join(app.static_folder, 'index.html')):
-                return send_from_directory(app.static_folder, 'index.html')
+                response = send_from_directory(app.static_folder, 'index.html')
+                # Always serve fresh HTML so browser picks up new JS bundles
+                response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+                response.headers['Pragma'] = 'no-cache'
+                response.headers['Expires'] = '0'
+                return response
             else:
                 return jsonify({'error': 'Frontend not built'}), 404
 
