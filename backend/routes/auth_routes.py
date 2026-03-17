@@ -41,17 +41,15 @@ def login():
         response = jsonify({
             'success': True, 
             'message': 'Login successful',
-            # 'token': token # Optional: remove token from body to encourage cookie usage, but keep for now if needed for debug
+            'token': token  # Return token in body for Bearer auth
         })
         
-        # Set HttpOnly cookie
-        # In production with HTTPS, set secure=True, samesite='Lax' or 'Strict'
-        
+        # Also set cookie as fallback (not relied upon for UI state)
         response.set_cookie(
             'access_token_cookie',
             token,
             httponly=True,
-            secure=False, # Must be false since the intranet runs on HTTP locally
+            secure=False,
             samesite='Lax',
             path='/'
         )

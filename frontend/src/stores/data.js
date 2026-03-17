@@ -1,53 +1,67 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+const TOKEN_KEY = 'avana_admin_token'
+
 export const useDataStore = defineStore('data', () => {
     const intercom = ref([])
     const loading = ref(false)
     const error = ref(null)
-    // Auth state: check localStorage first so it persists across navigation/refresh
-    const isAuthenticatedState = ref(!!localStorage.getItem('admin_token'))
 
-    // Base URL: Use env var if set (e.g. for separate hosting), otherwise relative path (for same-origin serving)
+    // Auth state is driven purely from localStorage token
+    const isAuthenticatedState = ref(!!localStorage.getItem(TOKEN_KEY))
+
     const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
-    /**
-     * Get headers for authenticated requests
-     * (Cookies are handled automatically by browser)
-     */
+    // ────────────────────────────────────────────────
+    // Token Helpers
+    // ────────────────────────────────────────────────
+    function getToken() {
+        return localStorage.getItem(TOKEN_KEY)
+    }
+
+    function setToken(token) {
+        localStorage.setItem(TOKEN_KEY, token)
+        isAuthenticatedState.value = true
+    }
+
+    function clearToken() {
+        localStorage.removeItem(TOKEN_KEY)
+        isAuthenticatedState.value = false
+    }
+
     function getAuthHeaders() {
+        const token = getToken()
         return {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
     }
 
-    /**
-     * Handle API errors with proper status code checking
-     */
+    // ────────────────────────────────────────────────
+    // Response Helper
+    // ────────────────────────────────────────────────
     async function handleResponse(response) {
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}))
             const errorMessage = errorData.error || errorData.message || `HTTP ${response.status}`
 
-            // Handle authentication errors
             if (response.status === 401) {
-                isAuthenticatedState.value = false
-                throw new Error('Authentication required. Please log in again.')
+                clearToken()
+                throw new Error('Session expired. Please log in again.')
             }
 
             throw new Error(errorMessage)
         }
-
         return response.json()
     }
 
-    /**
-     * Fetch all public data
-     */
+    // ────────────────────────────────────────────────
+    // Data Fetching
+    // ────────────────────────────────────────────────
     async function fetchAll() {
         loading.value = true
         error.value = null
-
         try {
             await fetchIntercom()
         } catch (e) {
@@ -59,50 +73,39 @@ export const useDataStore = defineStore('data', () => {
     }
 
     async function fetchIntercom() {
-        try {
-            const res = await fetch(`${API_BASE}/intercom`, { credentials: 'include' })
-            const json = await handleResponse(res)
-            intercom.value = json.data || [] // Handle wrapped response
-        } catch (e) {
-            console.error('Failed to fetch intercom:', e)
-            throw e
-        }
+        const res = await fetch(`${API_BASE}/intercom`)
+        const json = await handleResponse(res)
+        intercom.value = json.data || []
     }
 
-    /**
-     * Add new person
-     */
+    // ────────────────────────────────────────────────
+    // Admin CRUD
+    // ────────────────────────────────────────────────
     async function addIntercom(person) {
         loading.value = true
         try {
             const res = await fetch(`${API_BASE}/intercom`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
-                credentials: 'include',
                 body: JSON.stringify(person)
             })
             await handleResponse(res)
-            await fetchIntercom() // Refresh list
+            await fetchIntercom()
             return true
         } catch (e) {
             error.value = e.message
-            console.error('Add failed:', e)
             throw e
         } finally {
             loading.value = false
         }
     }
 
-    /**
-     * Update existing person
-     */
     async function updateIntercom(id, person) {
         loading.value = true
         try {
             const res = await fetch(`${API_BASE}/intercom/${id}`, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
-                credentials: 'include',
                 body: JSON.stringify(person)
             })
             await handleResponse(res)
@@ -110,39 +113,30 @@ export const useDataStore = defineStore('data', () => {
             return true
         } catch (e) {
             error.value = e.message
-            console.error('Update failed:', e)
             throw e
         } finally {
             loading.value = false
         }
     }
 
-    /**
-     * Delete person
-     */
     async function deleteIntercom(id) {
         loading.value = true
         try {
             const res = await fetch(`${API_BASE}/intercom/${id}`, {
                 method: 'DELETE',
-                headers: getAuthHeaders(),
-                credentials: 'include'
+                headers: getAuthHeaders()
             })
             await handleResponse(res)
             await fetchIntercom()
             return true
         } catch (e) {
             error.value = e.message
-            console.error('Delete failed:', e)
             throw e
         } finally {
             loading.value = false
         }
     }
 
-    /**
-     * Change admin password
-     */
     async function changePassword(oldPassword, newPassword) {
         loading.value = true
         try {
@@ -155,98 +149,69 @@ export const useDataStore = defineStore('data', () => {
             return data.success
         } catch (e) {
             error.value = e.message
-            console.error('Password change failed:', e)
             throw e
         } finally {
             loading.value = false
         }
     }
 
-    /**
-     * Login and set HttpOnly cookie
-     */
+    // ────────────────────────────────────────────────
+    // Auth
+    // ────────────────────────────────────────────────
     async function login(password) {
         loading.value = true
         error.value = null
-
         try {
             const res = await fetch(`${API_BASE}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ password })
             })
-
             const data = await handleResponse(res)
 
-            // Success: persist auth to localStorage so it survives page refresh/navigation
-            isAuthenticatedState.value = true
-            localStorage.setItem('admin_token', 'authenticated')
+            // Store the token in localStorage — no cookie dependency
+            if (data.token) {
+                setToken(data.token)
+            } else {
+                // Fallback: mark as authenticated even if no token in body
+                isAuthenticatedState.value = true
+                localStorage.setItem(TOKEN_KEY, 'authenticated')
+            }
             return true
         } catch (e) {
             error.value = e.message
-            console.error('Login failed:', e)
-            isAuthenticatedState.value = false // Ensure state is synced
+            clearToken()
             throw e
         } finally {
             loading.value = false
         }
     }
 
-    /**
-     * Logout and clear cookie
-     */
     async function logout() {
         try {
-            await fetch(`${API_BASE}/logout`, { method: 'POST', credentials: 'include' })
-        } catch (e) {
-            console.error('Logout failed (network error?):', e)
-        } finally {
-            isAuthenticatedState.value = false
-            localStorage.removeItem('admin_token')
-        }
-    }
-
-    /**
-     * Check if session is valid from server
-     */
-    async function checkAuth() {
-        // Only verify with server if we think we are already authenticated
-        // This prevents resetting auth state on every page load due to cookie issues
-        if (!isAuthenticatedState.value) return
-        try {
-            const res = await fetch(`${API_BASE}/check-auth`, {
-                credentials: 'include'
+            const token = getToken()
+            await fetch(`${API_BASE}/logout`, {
+                method: 'POST',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             })
-            if (res.ok) {
-                const data = await res.json()
-                // Only clear auth if server explicitly says not authenticated
-                if (!data.authenticated) {
-                    isAuthenticatedState.value = false
-                }
-            }
-            // If request fails (network error), keep current state
         } catch (e) {
-            // Network error - keep current auth state, don't log out
-            console.warn('checkAuth network error, keeping current state:', e)
+            console.error('Logout request failed:', e)
+        } finally {
+            clearToken()
         }
     }
 
-    /**
-     * Check if user is authenticated (Frontend check)
-     */
     function isAuthenticated() {
-        // Check both reactive state and localStorage for resilience
-        return isAuthenticatedState.value || !!localStorage.getItem('admin_token')
+        return isAuthenticatedState.value
     }
+
+    // Kept for compatibility — no longer calls server
+    async function checkAuth() {}
 
     return {
-        // State
         intercom,
         loading,
         error,
-
-        // Methods
         fetchAll,
         fetchIntercom,
         addIntercom,
