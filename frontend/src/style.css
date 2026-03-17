@@ -24,10 +24,15 @@
   }
 
   body {
-    background: white;
     margin: 0;
     padding: 0;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+  
+  /* Force all utility background colors to white and text to black to save ink */
+  * {
+    background-color: transparent !important;
+    color: black !important;
   }
 }
