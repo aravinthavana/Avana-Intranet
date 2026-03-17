@@ -340,9 +340,8 @@ const editForm = ref({})
 
 const newPerson = ref({ name: '', designation: '', extension: '', floor: 'Ground Floor' })
 
-const isAdmin = computed(() => {
-  return store.isAuthenticated()
-})
+
+
 
 async function changeAdminPassword() {
   if (!passwordForm.value.old || !passwordForm.value.new) {
