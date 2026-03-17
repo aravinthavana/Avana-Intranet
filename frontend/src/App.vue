@@ -40,7 +40,7 @@
           active-class="!bg-primary-700 !text-white shadow-md"
         >
           <Icon name="phone" size="md" />
-          <span>Phone Directory</span>
+          <span>Intercom Directory</span>
         </router-link>
       </div>
 
@@ -117,7 +117,7 @@ const store = useDataStore()
 
 const currentRouteName = computed(() => {
   if (route.path === '/') return 'Home'
-  if (route.path === '/intercom') return 'Phone Directory'
+  if (route.path === '/intercom') return 'Intercom Directory'
   if (route.path.includes('admin')) return 'Admin Area'
   return 'Avana Group Intranet'
 })
