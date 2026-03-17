@@ -331,7 +331,7 @@ const flatIntercom = computed(() => {
     floors[floor].push(p)
   })
   
-  const floorOrder = ['Ground Floor', '1st Floor', '2nd Floor', '3rd Floor']
+  const floorOrder = ['1st Floor', '2nd Floor', '3rd Floor', 'Ground Floor']
   const sortedKeys = Object.keys(floors).sort((a, b) => {
     return floorOrder.indexOf(a) - floorOrder.indexOf(b)
   })
@@ -358,7 +358,7 @@ const groupedIntercom = computed(() => {
     floors[floor][ext].people.push(p)
   })
   
-  const floorOrder = ['Ground Floor', '1st Floor', '2nd Floor', '3rd Floor']
+  const floorOrder = ['1st Floor', '2nd Floor', '3rd Floor', 'Ground Floor']
   const sortedKeys = Object.keys(floors).sort((a, b) => {
     return floorOrder.indexOf(a) - floorOrder.indexOf(b)
   })
