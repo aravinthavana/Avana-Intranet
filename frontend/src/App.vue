@@ -5,7 +5,7 @@
   </div>
   
   <!-- Main App Layout (User Views) -->
-  <div v-else class="flex w-full h-screen bg-neutral-50">
+  <div v-else class="flex w-full h-screen bg-neutral-50 print:bg-white">
     
     <!-- Sidebar -->
     <nav 
