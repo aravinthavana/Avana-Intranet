@@ -28,8 +28,11 @@
         href="http://admin.avana.local" 
         target="_blank"
         rel="noopener noreferrer"
-        class="group bg-white rounded-2xl shadow-sm border border-neutral-200 p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center"
+        class="relative group bg-white rounded-2xl shadow-sm border border-neutral-200 p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center"
       >
+        <div class="absolute bottom-4 right-4 text-neutral-300 group-hover:text-primary-600 transition-colors">
+          <Icon name="external-link" size="sm" />
+        </div>
         <div class="w-16 h-16 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <Icon name="cog" size="xl" />
         </div>
