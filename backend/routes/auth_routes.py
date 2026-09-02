@@ -40,8 +40,7 @@ def login():
         
         response = jsonify({
             'success': True, 
-            'message': 'Login successful',
-            'token': token  # Return token in body for Bearer auth
+            'message': 'Login successful'
         })
         
         # Also set cookie as fallback (not relied upon for UI state)

@@ -1,40 +1,21 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
-const TOKEN_KEY = 'avana_admin_token'
-
 export const useDataStore = defineStore('data', () => {
     const intercom = ref([])
     const loading = ref(false)
     const error = ref(null)
 
-    // Auth state is driven purely from localStorage token
-    const isAuthenticatedState = ref(!!localStorage.getItem(TOKEN_KEY))
+    // Auth state is verified on initialization via checkAuth()
+    const isAuthenticatedState = ref(false)
 
     const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
     // ────────────────────────────────────────────────
     // Token Helpers
     // ────────────────────────────────────────────────
-    function getToken() {
-        return localStorage.getItem(TOKEN_KEY)
-    }
-
-    function setToken(token) {
-        localStorage.setItem(TOKEN_KEY, token)
-        isAuthenticatedState.value = true
-    }
-
-    function clearToken() {
-        localStorage.removeItem(TOKEN_KEY)
-        isAuthenticatedState.value = false
-    }
-
     function getAuthHeaders() {
-        const token = getToken()
         return {
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            'Content-Type': 'application/json'
         }
     }
 
@@ -47,7 +28,7 @@ export const useDataStore = defineStore('data', () => {
             const errorMessage = errorData.error || errorData.message || `HTTP ${response.status}`
 
             if (response.status === 401) {
-                clearToken()
+                isAuthenticatedState.value = false
                 throw new Error('Session expired. Please log in again.')
             }
 
@@ -87,6 +68,7 @@ export const useDataStore = defineStore('data', () => {
             const res = await fetch(`${API_BASE}/intercom`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
+                credentials: 'include',
                 body: JSON.stringify(person)
             })
             await handleResponse(res)
@@ -106,6 +88,7 @@ export const useDataStore = defineStore('data', () => {
             const res = await fetch(`${API_BASE}/intercom/${id}`, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
+                credentials: 'include',
                 body: JSON.stringify(person)
             })
             await handleResponse(res)
@@ -124,6 +107,7 @@ export const useDataStore = defineStore('data', () => {
         try {
             const res = await fetch(`${API_BASE}/intercom/${id}`, {
                 method: 'DELETE',
+                credentials: 'include',
                 headers: getAuthHeaders()
             })
             await handleResponse(res)
@@ -143,6 +127,7 @@ export const useDataStore = defineStore('data', () => {
             const res = await fetch(`${API_BASE}/change-password`, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
+                credentials: 'include',
                 body: JSON.stringify({ old_password: oldPassword, new_password: newPassword })
             })
             const data = await handleResponse(res)
@@ -169,18 +154,15 @@ export const useDataStore = defineStore('data', () => {
             })
             const data = await handleResponse(res)
 
-            // Store the token in localStorage — no cookie dependency
-            if (data.token) {
-                setToken(data.token)
-            } else {
-                // Fallback: mark as authenticated even if no token in body
+            // The backend sets the HTTP-Only cookie automatically.
+            // We just need to trust the success response.
+            if (data.success) {
                 isAuthenticatedState.value = true
-                localStorage.setItem(TOKEN_KEY, 'authenticated')
             }
             return true
         } catch (e) {
             error.value = e.message
-            clearToken()
+            isAuthenticatedState.value = false
             throw e
         } finally {
             loading.value = false
@@ -189,15 +171,15 @@ export const useDataStore = defineStore('data', () => {
 
     async function logout() {
         try {
-            const token = getToken()
             await fetch(`${API_BASE}/logout`, {
                 method: 'POST',
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                credentials: 'include',
+                headers: getAuthHeaders()
             })
         } catch (e) {
             console.error('Logout request failed:', e)
         } finally {
-            clearToken()
+            isAuthenticatedState.value = false
         }
     }
 
@@ -205,8 +187,23 @@ export const useDataStore = defineStore('data', () => {
         return isAuthenticatedState.value
     }
 
-    // Kept for compatibility — no longer calls server
-    async function checkAuth() {}
+    async function checkAuth() {
+        try {
+            const res = await fetch(`${API_BASE}/check-auth`, {
+                method: 'GET',
+                credentials: 'include'
+            })
+            if (res.ok) {
+                const data = await res.json()
+                isAuthenticatedState.value = !!data.authenticated
+            } else {
+                isAuthenticatedState.value = false
+            }
+        } catch (e) {
+            isAuthenticatedState.value = false
+            console.error('Check auth failed:', e)
+        }
+    }
 
     return {
         intercom,

@@ -14,7 +14,7 @@
     >
       <!-- Brand -->
       <div class="flex items-center gap-3 mb-8 pb-4 border-b border-neutral-100">
-        <img src="./assets/Avana-logo-black.png" alt="Avana Logo" class="w-8 h-auto object-contain" />
+        <img src="./assets/Avana-Logo.png" alt="Avana Logo" class="w-8 h-auto object-contain" />
         <div class="flex flex-col leading-tight">
           <span class="font-bold text-base text-neutral-800">Avana Group</span>
           <span class="text-xs text-neutral-500 uppercase tracking-wide">Intranet Portal</span>
@@ -42,6 +42,16 @@
           <Icon name="phone" size="md" />
           <span>Intercom Directory</span>
         </router-link>
+
+        <a 
+          href="http://admin.avana.local" 
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-neutral-600 hover:bg-neutral-50 hover:text-primary-700 hover:translate-x-0.5 transition-all duration-200"
+        >
+          <Icon name="cog" size="md" />
+          <span>Admin HelpDesk</span>
+        </a>
       </div>
 
       <!-- Admin Link -->
@@ -105,7 +115,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDataStore } from './stores/data'
 import Icon from './components/ui/Icon.vue'
@@ -114,6 +124,10 @@ const isSidebarOpen = ref(false)
 const route = useRoute()
 const router = useRouter()
 const store = useDataStore()
+
+onMounted(async () => {
+  await store.checkAuth()
+})
 
 const currentRouteName = computed(() => {
   if (route.path === '/') return 'Home'

@@ -23,6 +23,23 @@
         </span>
       </router-link>
 
+      <!-- Admin HelpDesk Card -->
+      <a 
+        href="http://admin.avana.local" 
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group bg-white rounded-2xl shadow-sm border border-neutral-200 p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center"
+      >
+        <div class="w-16 h-16 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <Icon name="cog" size="xl" />
+        </div>
+        <h3 class="text-xl font-bold text-neutral-900 mb-3 group-hover:text-primary-700 transition-colors">Admin HelpDesk</h3>
+        <p class="text-neutral-500 mb-6">Admin support & requests, conference room booking.</p>
+        <span class="text-primary-600 font-medium flex items-center gap-2 group-hover:gap-3 transition-all">
+          Open App <Icon name="arrow-right" size="sm" />
+        </span>
+      </a>
+
       <!-- Coming Soon Card (Placeholder) -->
       <div class="bg-neutral-50 rounded-2xl border border-neutral-200 p-8 flex flex-col items-center text-center opacity-75">
         <div class="w-16 h-16 rounded-2xl bg-neutral-100 text-neutral-400 flex items-center justify-center mb-6">

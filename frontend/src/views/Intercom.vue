@@ -122,7 +122,7 @@
                 v-for="person in ext.people" 
                 :key="person.id" 
                 class="group bg-white"
-                :class="{ 'bg-blue-50/50': editingId === person.id }"
+                :class="{ 'bg-primary-50/50': editingId === person.id }"
               >
                 <!-- Edit View -->
                 <div v-if="editingId === person.id" class="p-4 bg-white">
